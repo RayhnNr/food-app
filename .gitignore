@@ -1,12 +1,41 @@
-# frontend
+# ===== Frontend (Vue + Vite) =====
 frontend/node_modules/
 frontend/dist/
+frontend/dist-ssr/
+frontend/coverage/
+frontend/.vite/
+frontend/*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
 
-# backend
+# ===== Backend (Go) =====
 backend/tmp/
-backend/body.json
-backend/.env
-*.exe
+backend/*.exe
+backend/*.test
+backend/*.out
+backend/vendor/
+backend/build-errors.log
 
-# umum
-.vscode/
+# ===== Rahasia / environment =====
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ===== File tes lokal =====
+backend/body.json
+*.log
+
+# ===== Editor & IDE =====
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.suo
+
+# ===== Sistem operasi =====
+.DS_Store
+Thumbs.db
+desktop.ini
