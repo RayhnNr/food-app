@@ -1,0 +1,126 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import api from '@/api'
+import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'vue-toast-notification'
+import { useCart } from '@/composables/useCart'
+
+const { getCartCount } = useCart()
+const toast = useToast()
+const route = useRoute()
+const router = useRouter()     
+const food = ref(null)
+const pesan = ref({
+    jumlah: 1,
+    keterangan: ''
+})
+
+onMounted(async () => {
+  const res = await api.get(`/products/${route.params.id}`)
+  food.value = res.data
+})
+
+const pemesanan = async () => {
+    try {
+        const cek = await api.get('/keranjangs', {
+            params: { 'products.id': food.value.id },
+        })
+
+        if (cek.data.length > 0) {
+            const item = cek.data[0]
+            await api.patch(`/keranjangs/${item.id}`, {
+                jumlah: Number(item.jumlah) + Number(pesan.value.jumlah),
+                keterangan: pesan.value.keterangan || item.keterangan,
+            })
+            toast.success('Jumlah pesanan diperbarui')
+        } else {
+            pesan.value.products = food.value
+            await api.post('/keranjangs', pesan.value)
+            toast.success('Berhasil ditambahkan ke keranjang')
+        }
+        await getCartCount()
+    } catch (e) {
+        toast.error('Gagal menambah ke keranjang')
+        console.error(e)
+    }
+}
+</script>
+
+<template>
+    <section class="max-w-5xl mx-auto px-4 py-12">
+        <p v-if="!food" class="text-emerald-600">Memuat data...</p>
+        <div v-else class="grid md:grid-cols-2 gap-10 items-center">
+            <!-- Gambar -->
+            <img :src="`/gambar/${food.gambar}`" :alt="food.nama" class="w-full h-72 md:h-120 object-cover rounded-2xl shadow-md"/>
+            <div>
+                <nav aria-label="breadcrumb" class="w-max">
+                    <ol class="flex w-full flex-wrap items-center rounded-md py-1">
+                        <li class="flex cursor-pointer items-center text-sm text-emerald-600 transition-colors duration-300 hover:text-emerald-800">
+
+                            <RouterLink to="/">
+                                <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-4 w-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                >
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                                </svg>
+                            </RouterLink>
+                            <span class="pointer-events-none mx-2 text-emerald-800">
+                                /
+                            </span>
+                        </li>
+                        <li class="flex cursor-pointer items-center text-sm text-emerald-600 transition-colors duration-300 hover:text-emerald-800">
+                            <!-- <a href="#">Components</a> -->
+                            <RouterLink to="/foods"> Foods</RouterLink>
+                            <span class="pointer-events-none mx-2 text-emerald-800">
+                                /
+                            </span>
+                        </li>
+                        <li class="flex cursor-pointer items-center text-sm text-emerald-600 transition-colors duration-300 hover:text-emerald-800">
+                            <a href="">{{ food.nama }}</a>
+                        </li>
+                    </ol>
+                </nav>
+                
+                
+
+                <h1 class="mt-3 text-3xl md:text-4xl font-bold text-emerald-800">{{ food.nama }}</h1>
+                <p class="mt-2 text-2xl text-emerald-600 font-bold">
+                    Rp {{ food.harga.toLocaleString('id-ID') }}
+                </p>
+                <p class="mt-3 text-sm" :class="food.is_ready ? 'text-emerald-600' : 'text-red-500'">
+                    <i class="fa-solid" :class="food.is_ready ? 'fa-circle-check' : 'fa-circle-xmark'"></i>
+                    {{ food.is_ready ? 'Tersedia' : 'Habis' }}
+                </p>
+
+                <form v-on:submit.prevent class="mt-6 space-y-4">
+                    <div>
+                        <label for="jumlah" class="block text-sm font-medium text-slate-700 mb-1">Jumlah Pesanan</label>
+                        <input
+                            id="jumlah"
+                            v-model="pesan.jumlah"
+                            type="number"
+                            class="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-4 focus:ring-emerald-300"
+                        />
+                    </div>
+
+                    <div>
+                        <label for="keterangan" class="block text-sm font-medium text-slate-700 mb-1">Keterangan</label>
+                        <textarea
+                            id="keterangan"
+                            v-model="pesan.keterangan"
+                            placeholder="Contoh: tidak pedas"
+                            class="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-4 focus:ring-emerald-300"
+                        ></textarea>
+                    </div>
+                </form>
+
+                <button :disabled="!food.is_ready" @click="pemesanan" class="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-medium transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-300 disabled:bg-slate-300 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-cart-plus"></i> Tambah ke Keranjang
+                </button>
+            </div>
+        </div>
+    </section>
+</template>

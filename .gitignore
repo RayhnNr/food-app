@@ -1,0 +1,12 @@
+# frontend
+frontend/node_modules/
+frontend/dist/
+
+# backend
+backend/tmp/
+backend/body.json
+backend/.env
+*.exe
+
+# umum
+.vscode/
