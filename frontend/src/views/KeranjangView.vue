@@ -34,14 +34,17 @@ const getKeranjang = async () => {
         const res = await api.get('/keranjangs');
         keranjangs.value = res.data;
     } catch (e) {
-        error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
+        console.error('Error:', e);
+        console.error('Response:', e.response?.data);
+
+        error.value = 'Gagal mengambil data keranjang.';
     }
 };
 
 const getPesanans = async () => {
     try {
         const res = await api.get('/pesanans')
-        pesanans.value = res.data
+        pesanans.value = res.data.data
     } catch (e) {
         error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
     }
@@ -150,7 +153,7 @@ onMounted(async () => {
             <div class="w-full md:w-3/4">
                 <div class="bg-white rounded-md shadow-md p-3 sm:p-6">
                     <div class="w-full overflow-x-auto">
-                        <table class="w-full min-w-[900px]">
+                        <table class="w-full min-w-225">
                             <thead>
                                 <tr>
                                     <th class="text-left font-semibold">#</th>

@@ -23,7 +23,7 @@ const getFoods = async () => {
                 _order: 'DESC'
             }
         })
-        foods.value = res.data
+        foods.value = res.data.data
     } catch (e) {
         error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
     } finally {

@@ -6,7 +6,7 @@ const sidebarOpen = ref(false)
 const menus = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: 'fa-gauge' },
   { to: '/admin/foods', label: 'Kelola Menu', icon: 'fa-utensils' },
-  { to: '/admin/pesanans', label: 'Pesanans', icon: 'fa-utensils' },
+  { to: '/admin/pesanans', label: 'Pesanans', icon: 'fa-receipt' },
 ]
 </script>
 
@@ -19,33 +19,54 @@ const menus = [
       @click="sidebarOpen = false"
     ></div>
 
-    <!-- Sidebar -->
+    <!-- Sidebar (gaya Flowbite) -->
     <aside
-      class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-200 transform transition-transform lg:static lg:translate-x-0"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform transition-transform lg:static lg:translate-x-0"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+      aria-label="Sidebar"
     >
-      <div class="h-16 flex items-center gap-2 px-6 font-bold text-lg text-white border-b border-slate-700">
-        <i class="fa-solid fa-utensils text-emerald-400"></i> Admin Panel
-      </div>
+      <div class="flex h-full flex-col px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800 lg:rounded-r">
+        <!-- Brand -->
+        <div class="flex items-center p-2 mb-4 text-lg font-bold text-gray-900 dark:text-white">
+          <i class="fa-solid fa-utensils w-6 text-center text-emerald-600"></i>
+          <span class="ml-3">Admin Panel</span>
+        </div>
 
-      <nav class="p-4 space-y-1">
-        <RouterLink
-          v-for="m in menus"
-          :key="m.to"
-          :to="m.to"
-          class="flex items-center gap-3 px-3 py-2 rounded-lg transition hover:bg-slate-800"
-          active-class="bg-emerald-600 text-white"
-          @click="sidebarOpen = false"
-        >
-          <i :class="['fa-solid w-5 text-center', m.icon]"></i>
-          {{ m.label }}
-        </RouterLink>
-      </nav>
+        <!-- Menu -->
+        <ul class="space-y-2">
+          <li v-for="m in menus" :key="m.to">
+            <RouterLink
+              :to="m.to"
+              class="group flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+              active-class="!bg-gray-200 dark:!bg-gray-700"
+              @click="sidebarOpen = false"
+            >
+              <i
+                :class="[
+                  'fa-solid w-6 text-center text-lg text-gray-500 transition duration-75 dark:text-gray-400',
+                  'group-hover:text-gray-900 dark:group-hover:text-white',
+                  m.icon,
+                ]"
+              ></i>
+              <span class="flex-1 ml-3 whitespace-nowrap">{{ m.label }}</span>
+            </RouterLink>
+          </li>
+        </ul>
 
-      <div class="absolute bottom-0 w-full p-4 border-t border-slate-700">
-        <RouterLink to="/" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800">
-          <i class="fa-solid fa-arrow-left w-5 text-center"></i> Kembali ke Situs
-        </RouterLink>
+        <!-- Bawah -->
+        <ul class="pt-4 mt-auto space-y-2 border-t border-gray-200 dark:border-gray-700">
+          <li>
+            <RouterLink
+              to="/"
+              class="group flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <i
+                class="fa-solid fa-arrow-left w-6 text-center text-lg text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+              ></i>
+              <span class="flex-1 ml-3 whitespace-nowrap">Kembali ke Situs</span>
+            </RouterLink>
+          </li>
+        </ul>
       </div>
     </aside>
 

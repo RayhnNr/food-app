@@ -11,7 +11,7 @@ const toast = useToast()
 const isEdit = computed(() => !!route.params.id)
 
 const form = ref({
-    kode: '',
+    // kode: '',
     nama: '',
     harga: 0,
     is_ready: true,
@@ -30,7 +30,7 @@ onMounted(async () => {
 const validasi = () => {
     errors.value = {}
 
-    if (!form.value.kode) errors.value.kode = 'Kode wajib diisi'
+    // if (!form.value.kode) errors.value.kode = 'Kode wajib diisi'
 
     if (!form.value.nama) {
         errors.value.nama = 'Nama wajib diisi'
@@ -76,7 +76,8 @@ watch(form, () => { errors.value = {} }, { deep: true },)
 
         <form @submit.prevent="simpan" novalidate class="space-y-4">
             <!-- Kode -->
-            <div>
+            
+            <div  v-if="isEdit">
                 <label class="block text-sm font-medium mb-1">Kode</label>
                 <input
                     v-model.trim="form.kode"
@@ -86,8 +87,9 @@ watch(form, () => { errors.value = {} }, { deep: true },)
                             ? 'border-red-500 focus:ring-red-200'
                             : 'border-slate-300 focus:ring-emerald-300'
                     "
+                    readonly
                 />
-                <p v-if="errors.kode" class="mt-1 text-sm text-red-600">{{ errors.kode }}</p>
+                <!-- <p v-if="errors.kode" class="mt-1 text-sm text-red-600">{{ errors.kode }}</p> -->
             </div>
 
             <!-- Nama -->

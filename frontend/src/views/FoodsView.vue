@@ -15,7 +15,7 @@ const getFoods = async () => {
         const res = await api.get('/products', {
             params: { q: search.value },
         });
-        foods.value = res.data;
+        foods.value = res.data.data;
     } catch (e) {
         error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
     } finally {

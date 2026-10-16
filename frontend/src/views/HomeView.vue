@@ -11,9 +11,9 @@ const error = ref(null);
 
 const getFoods = async () => {
     try {
-        const res = await api.get('/best-products', { params: { _limit: 6 } });
+        const res = await api.get('/products', { params: { _limit: 6 } });
         console.log('Data API: ', res.data);
-        foods.value = res.data;
+        foods.value = res.data.data;
     } catch (e) {
         error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
     } finally {
