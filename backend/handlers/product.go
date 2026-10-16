@@ -58,7 +58,13 @@ func validasi(in *ProductInput) map[string]string {
 func GetData(c *gin.Context) {
 	products := []models.Product{}
 
-	if err := database.DB.Order("id DESC").Find(&products).Error; err != nil {
+	q := strings.TrimSpace(c.Query("q"))
+	db := database.DB.Order("id DESC")
+	if q != "" {
+		db = db.Where("nama ILIKE ?", "%"+q+"%")
+	}
+
+	if err := db.Find(&products).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Gagal ambil data",
 		})

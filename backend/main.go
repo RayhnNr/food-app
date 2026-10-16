@@ -12,7 +12,12 @@ import (
 
 func main() {
 	database.Connect()
-	database.DB.AutoMigrate(&models.Product{})
+	database.DB.AutoMigrate(
+		&models.Product{},
+		&models.Keranjang{},
+		&models.Pesanan{},
+		&models.PesananItem{},
+	)
 	r := gin.Default()
 
 	// CORS: izinkan Vue (Vite) memanggil API ini
@@ -33,6 +38,9 @@ func main() {
 	r.POST("/products", handlers.CreateProduct)
 	r.PUT("/products/:id", handlers.UpdateProduct)
 	r.DELETE("/products/:id", handlers.DeleteProduct)
+
+	// Keranjang
+	r.GET("/keranjangs", handlers.GetKeranjang)
 
 	r.Run(":8080")
 }
