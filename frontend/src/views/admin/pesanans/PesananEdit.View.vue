@@ -23,7 +23,7 @@ const form = ref({
 
 const total = computed(() =>
     form.value.keranjangs.reduce((sum, item) => {
-        const harga = Number(item.products?.harga) || 0;
+        const harga = Number(item.harga) || 0;
         const jumlah = Number(item.jumlah) || 0;
         return sum + harga * jumlah;
     }, 0),
@@ -41,14 +41,17 @@ const muatPesanan = async () => {
     loadError.value = '';
 
     try {
-        const { data } = await api.get(`/pesanans/${route.params.id}`);
+        const { data } = await api.get(
+            `/admin/pesanans/${route.params.id}`,
+        );
+
         form.value = {
             ...data,
-            noMeja: data.noMeja ?? '',
-            keranjangs: Array.isArray(data.keranjangs) ? data.keranjangs : [],
+            noMeja: data.no_meja ?? '',
+            keranjangs: Array.isArray(data.items) ? data.items : [],
         };
     } catch (error) {
-        loadError.value = 'Pesanan gagal dimuat. Pastikan API berjalan dan pesanan tersedia.';
+        loadError.value = 'Pesanan gagal dimuat.';
         toast.error(loadError.value);
         console.error(error);
     } finally {
@@ -87,21 +90,26 @@ const simpan = async () => {
     if (!validasi()) return;
 
     saving.value = true;
+
     try {
-        await api.put(`/pesanans/${route.params.id}`, {
-            ...form.value,
+        await api.put(`/admin/pesanans/${route.params.id}`, {
             nama: form.value.nama.trim(),
-            noMeja: Number(form.value.noMeja),
-            keranjangs: form.value.keranjangs.map((item) => ({
-                ...item,
+            no_meja: Number(form.value.noMeja),
+            status: form.value.status,
+            items: form.value.keranjangs.map((item) => ({
+                id: item.id,
                 jumlah: Number(item.jumlah),
+                keterangan: item.keterangan || '',
             })),
-            total: total.value,
         });
+
         toast.success('Pesanan berhasil diperbarui');
         router.push('/admin/pesanans');
     } catch (error) {
-        toast.error('Gagal memperbarui pesanan');
+        toast.error(
+            error.response?.data?.message ||
+                'Gagal memperbarui pesanan',
+        );
         console.error(error);
     } finally {
         saving.value = false;
@@ -195,10 +203,10 @@ onMounted(muatPesanan);
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div>
                                 <p class="font-medium text-slate-800">
-                                    {{ item.products?.nama || 'Produk tidak tersedia' }}
+                                    {{ item.nama || 'Produk tidak tersedia' }}
                                 </p>
                                 <p class="text-sm text-slate-500">
-                                    {{ formatRupiah(Number(item.products?.harga) || 0) }} / item
+                                    {{ formatRupiah(Number(item.harga) || 0) }} / item
                                 </p>
                             </div>
                             <button
@@ -244,8 +252,8 @@ onMounted(muatPesanan);
                             Subtotal:
                             {{
                                 formatRupiah(
-                                    (Number(item.products?.harga) || 0) *
-                                        (Number(item.jumlah) || 0),
+                                    (Number(item.harga) || 0) *
+                                    (Number(item.jumlah) || 0)
                                 )
                             }}
                         </p>

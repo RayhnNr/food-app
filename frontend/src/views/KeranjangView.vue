@@ -66,25 +66,24 @@ const checkout = async () => {
 
     try {
         await api.post('/pesanans', {
-            ...pesan.value,
-            keranjangs: keranjangs.value,
-            status: 'diproses',
-            tanggal: new Date().toISOString(),
-            total: totalHarga.value,
+            nama: pesan.value.nama,
+            no_meja: Number(pesan.value.noMeja)
         })
 
-        await Promise.all(
-            keranjangs.value.map((item) => api.delete(`/keranjangs/${item.id}`))
-        )
-
         keranjangs.value = []
-        pesan.value = { nama: '', noMeja: '' }
+        pesan.value = { 
+            nama: '', 
+            noMeja: '' 
+        }
+
         await getCartCount()
-        await getPesanans() // refresh riwayat pesanan
+        await getPesanans()
 
         toast.success('Pesanan berhasil dibuat')
     } catch (e) {
-        toast.error('Gagal membuat pesanan')
+        toast.error(
+            e.response?.data?.message || 'Gagal membuat pesanan'
+        )
         console.error(e)
     }
 }
@@ -289,7 +288,7 @@ onMounted(async () => {
                     <div>
                         <h3 class="font-semibold text-slate-800">{{ pesanan.nama }}</h3>
                         <p class="text-sm text-slate-500">
-                            <i class="fa-solid fa-chair mr-1"></i>Meja {{ pesanan.noMeja }}
+                            <i class="fa-solid fa-chair mr-1"></i>Meja {{ pesanan.no_meja }}
                         </p>
                     </div>
                     <span
@@ -304,21 +303,23 @@ onMounted(async () => {
                 <!-- Daftar item -->
                 <ul class="mt-4 space-y-2 border-t border-slate-100 pt-3">
                     <li
-                        v-for="item in pesanan.keranjangs"
+                        v-for="item in pesanan.items"
                         :key="item.id"
                         class="flex items-start justify-between gap-3 text-sm"
                     >
                         <div>
                             <p class="font-medium text-slate-700">
-                                {{ item.products.nama }}
+                                {{ item.nama }}
                                 <span class="text-slate-400">x{{ item.jumlah }}</span>
                             </p>
+
                             <p v-if="item.keterangan" class="text-xs text-slate-400">
                                 {{ item.keterangan }}
                             </p>
                         </div>
+
                         <span class="text-slate-600 whitespace-nowrap">
-                            {{ formatRupiah(item.products.harga * item.jumlah) }}
+                            {{ formatRupiah(item.harga * item.jumlah) }}
                         </span>
                     </li>
                 </ul>

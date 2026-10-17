@@ -1,77 +1,81 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import api from '@/api'
-import { useToast } from 'vue-toast-notification'
-import { useCart } from '@/composables/useCart'
-import Modal from '@/components/Modal.vue'
+import { ref, onMounted, watch } from 'vue';
+import api from '@/api';
+import { useToast } from 'vue-toast-notification';
+import { useCart } from '@/composables/useCart';
+import Modal from '@/components/Modal.vue';
 
-const { getCartCount } = useCart()
-const pesanans = ref([])
-const loading = ref(true)
-const error = ref(null)
-const search = ref('')
-const toast = useToast()
-const showModal = ref(false)
-const pesananDipilih = ref(null)
+const pesanans = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const search = ref('');
+const toast = useToast();
+const showModal = ref(false);
+const pesananDipilih = ref(null);
+const actionButtonClass =
+    'inline-flex h-9 w-9 items-center justify-center rounded-md border text-gray-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
 
 const bukaDetail = (pesanan) => {
-  pesananDipilih.value = pesanan   // kirim data ke modal
-  showModal.value = true
-}
+    pesananDipilih.value = pesanan; // kirim data ke modal
+    showModal.value = true;
+};
 
 const tutup = () => {
-  showModal.value = false
-  pesananDipilih.value = null
-}
+    showModal.value = false;
+    pesananDipilih.value = null;
+};
 
 const getPesanan = async () => {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
     try {
-        const res = await api.get('/pesanans', {
-            params: { 
-                q: search.value ,
-                _sort: 'id',
-                _order: 'DESC'
-            }
-        })
-        pesanans.value = res.data
+        const res = await api.get('/admin/pesanans', {
+            params: {
+                q: search.value,
+            },
+        });
+        pesanans.value = Array.isArray(res.data) ? res.data : [];
     } catch (e) {
-        error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
+        error.value = 'Gagal mengambil data pesanan. Pastikan backend aktif.';
     } finally {
         loading.value = false;
     }
-}
+};
 
-const hapusMakanan = async (id) => {
-    if(!confirm('Apakah anda yakin ingin mengahapus Pesanan ini?')){
+const hapusPesanan = async (id) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus pesanan ini?')) {
         return;
     }
 
     try {
-        await api.delete(`/pesanans/${id}`);
-        await getCartCount()
-        pesanans.value = pesanans.value.filter(
-            (item) => item.id !== id
-        );
-        toast.success('Berhasil Mengahapus Makanan')
+        await api.delete(`/admin/pesanans/${id}`);
+        pesanans.value = pesanans.value.filter((item) => item.id !== id);
+        toast.success('Pesanan berhasil dihapus');
     } catch (e) {
-        toast.error('Gagal menghapus Makanan')
+        toast.error('Gagal menghapus pesanan');
     }
-}
+};
 
 const ubahStatus = async (pesanan) => {
     try {
-        await api.patch(`/pesanans/${pesanan.id}`, { status: 'selesai' })
-        toast.success('Berhasil Mengahapus Makanan')
-        await getPesanans()
+        await api.put(`/admin/pesanans/${pesanan.id}`, {
+            nama: pesanan.nama,
+            no_meja: pesanan.no_meja,
+            status: 'selesai',
+            items: (pesanan.items || []).map((item) => ({
+                id: item.id,
+                jumlah: item.jumlah,
+                keterangan: item.keterangan || '',
+            })),
+        });
+        toast.success('Status pesanan berhasil diperbarui');
+        await getPesanan();
     } catch (error) {
-        toast.error('Gagal memperbarui status')
-        console.error(e)
+        toast.error('Gagal memperbarui status');
+        console.error(error);
     }
-    
-}
+};
 
 function formatRupiah(angka) {
     return new Intl.NumberFormat('id-ID', {
@@ -82,40 +86,42 @@ function formatRupiah(angka) {
 }
 
 const formatTanggal = (iso) => {
-    if (!iso) return '-'
-    return new Date(iso).toLocaleDateString('id-ID', {
+    if (!iso) return '-';
+    const tanggal = new Date(iso);
+    if (Number.isNaN(tanggal.getTime())) return '-';
+    return tanggal.toLocaleDateString('id-ID', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
         timeZone: 'Asia/Jakarta',
-    })
-}
+    });
+};
 const warnaStatus = (status) =>
-    status === 'selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+    status === 'selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
 
-onMounted(getPesanan)
+onMounted(getPesanan);
 
 let timer;
 watch(search, () => {
     clearTimeout(timer);
-    timer = setTimeout(getpesanans, 400);
+    timer = setTimeout(getPesanan, 400);
 });
-
 </script>
 
 <template>
-  <section class="p-6">
-    <h1 class="text-3xl font-bold mb-8">Daftar Pesanan</h1>
+    <section class="p-6">
+        <h1 class="text-3xl font-bold mb-8">Daftar Pesanan</h1>
 
-        <!-- Search and Add User (Static) -->
+        <!-- Search -->
         <div class="flex flex-col md:flex-row justify-between items-center mb-6">
             <div class="w-full md:w-1/3 mb-4 md:mb-0">
-                <input v-model="search" type="text" placeholder="Search users..." class="w-full px-4 py-2 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input
+                    v-model="search"
+                    type="search"
+                    placeholder="Cari nama pelanggan..."
+                    class="w-full px-4 py-2 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
             </div>
-            <RouterLink to="/admin/pesanans/tambah" class="px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">
-                <i class="fa-solid fa-plus mr-1"></i> Tambah
-            </RouterLink>
-           
         </div>
 
         <!-- User Table -->
@@ -133,17 +139,33 @@ watch(search, () => {
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 text-sm">
-                    <tr v-if="pesanans.length === 0">
+                    <tr v-if="loading">
                         <td colspan="7" class="text-center py-10 text-gray-500">
-                            Pesanan masih kosong.
+                            Memuat pesanan...
                         </td>
                     </tr>
-                    <tr v-else v-for="(pesanan, index) in pesanans" :key="pesanan.id" class="border-b border-gray-200 hover:bg-gray-100">
+                    <tr v-else-if="error">
+                        <td colspan="7" class="text-center py-10 text-red-600">
+                            {{ error }}
+                            <button @click="getPesanan" class="ml-2 underline">Coba lagi</button>
+                        </td>
+                    </tr>
+                    <tr v-else-if="pesanans.length === 0">
+                        <td colspan="7" class="text-center py-10 text-gray-500">
+                            {{ search ? 'Pesanan tidak ditemukan.' : 'Pesanan masih kosong.' }}
+                        </td>
+                    </tr>
+                    <tr
+                        v-else
+                        v-for="pesanan in pesanans"
+                        :key="pesanan.id"
+                        class="border-b border-gray-200 hover:bg-gray-100"
+                    >
                         <td class="py-3 px-6 text-left">
-                            {{ index + 1 }}
+                            {{ pesanan.id }}
                         </td>
                         <td class="py-3 px-2 text-left">{{ pesanan.nama }}</td>
-                        <td class="py-3 px-2 text-left">{{ pesanan.noMeja }}</td>
+                        <td class="py-3 px-2 text-left">{{ pesanan.no_meja }}</td>
                         <td class="py-3 px-2 text-left">{{ formatTanggal(pesanan.tanggal) }}</td>
                         <td class="py-3 px-6 text-left">{{ formatRupiah(pesanan.total) }}</td>
                         <td class="py-3 px-6 text-left">
@@ -154,45 +176,89 @@ watch(search, () => {
                                 {{ pesanan.status }}
                             </span>
                         </td>
-                        <td class="py-3 px-6 text-center">
-                            <div class="flex item-center justify-center">
-                                <RouterLink :to="`/admin/pesanans/${pesanan.id}/edit`" class="w-4 mr-2 transform hover:text-blue-500 hover:scale-110">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        <td class="py-3 px-6 text-left">
+                            <div class="flex items-center justify-start gap-2">
+                                <RouterLink
+                                    v-if="pesanan.status !== 'selesai'"
+                                    :to="`/admin/pesanans/${pesanan.id}/edit`"
+                                    :class="[actionButtonClass, 'border-blue-200 bg-blue-100']"
+                                    title="Edit pesanan"
+                                    aria-label="Edit pesanan"
+                                >
+                                    <svg
+                                        class="h-3.5 w-3.5"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                        />
                                     </svg>
                                 </RouterLink>
                                 <button
                                     v-if="pesanan.status !== 'selesai'"
                                     @click="ubahStatus(pesanan)"
                                     title="Tandai selesai"
-                                    class="mr-2 text-emerald-600 hover:text-emerald-800 transition"
+                                    aria-label="Tandai selesai"
+                                    :class="[
+                                        actionButtonClass,
+                                        'border-emerald-200 bg-emerald-100',
+                                    ]"
                                 >
-                                    <i class="fa-solid fa-check"></i>
+                                    <i class="fa-solid fa-check text-sm"></i>
                                 </button>
-                                <button @click="bukaDetail(pesanan)" title="Detail" class="text-sky-600 hover:underline">
-                                    <i class="fa-solid fa-eye"></i>
+                                <button
+                                    @click="bukaDetail(pesanan)"
+                                    title="Detail"
+                                    aria-label="Detail pesanan"
+                                    :class="[actionButtonClass, 'border-sky-200 bg-sky-100']"
+                                >
+                                    <i class="fa-solid fa-eye text-sm"></i>
                                 </button>
-
+                                <button
+                                    v-if="pesanan.status !== 'selesai'"
+                                    @click="hapusPesanan(pesanan.id)"
+                                    title="Hapus pesanan"
+                                    aria-label="Hapus pesanan"
+                                    :class="[actionButtonClass, 'border-red-200 bg-red-100']"
+                                >
+                                    <i class="fa-solid fa-trash text-sm"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-  </section>
-  <Modal :show="showModal" title="Detail Pesanan" @close="tutup">
-    <div v-if="pesananDipilih">
-      <p class="font-semibold">{{ pesananDipilih.nama }} - Meja {{ pesananDipilih.noMeja }}</p>
+    </section>
+    <Modal :show="showModal" title="Detail Pesanan" @close="tutup">
+        <div v-if="pesananDipilih">
+            <p class="font-semibold">
+                {{ pesananDipilih.nama }} - Meja {{ pesananDipilih.no_meja }}
+            </p>
 
-      <ul class="mt-3 space-y-1 text-sm">
-        <li v-for="item in pesananDipilih.keranjangs" :key="item.id">
-          {{ item.products.nama }} x{{ item.jumlah }}
-        </li>
-      </ul>
+            <ul class="mt-3 space-y-1 text-sm">
+                <li v-for="item in pesananDipilih.items" :key="item.id">
+                    {{ item.nama }} x{{ item.jumlah }} —
+                    {{ formatRupiah(item.harga * item.jumlah) }}
 
-      <p class="mt-4 font-bold text-emerald-600">
-        Total: Rp {{ pesananDipilih.total?.toLocaleString('id-ID') }}
-      </p>
-    </div>
-  </Modal>
+                    <p v-if="item.keterangan" class="text-gray-500">
+                        {{ item.keterangan }}
+                    </p>
+                </li>
+            </ul>
+            <p v-if="!pesananDipilih.items?.length" class="mt-3 text-sm text-gray-500">
+                Tidak ada item pada pesanan ini.
+            </p>
+
+            <p class="mt-4 font-bold text-emerald-600">
+                Total: {{ formatRupiah(pesananDipilih.total) }}
+            </p>
+        </div>
+    </Modal>
 </template>
