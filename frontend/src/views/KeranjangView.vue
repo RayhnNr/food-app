@@ -25,9 +25,9 @@ function formatRupiah(angka) {
 
 const totalHarga = computed(() => {
     return keranjangs.value.reduce((total, item) => {
-        return total + item.products.harga * item.jumlah;
-    }, 0);
-});
+        return total + item.product.harga * item.jumlah
+    }, 0)
+})
 
 const getKeranjang = async () => {
     try {
@@ -44,9 +44,12 @@ const getKeranjang = async () => {
 const getPesanans = async () => {
     try {
         const res = await api.get('/pesanans')
-        pesanans.value = res.data.data
+        pesanans.value = res.data
     } catch (e) {
-        error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
+        console.error('Error:', e);
+        console.error('Response:', e.response?.data);
+
+        error.value = 'Gagal mengambil data pesanan.';
     }
 }
 
@@ -107,20 +110,23 @@ const hapusPesanan = async (id) => {
 }
 
 const ubahJumlah = async (keranjang, perubahan) => {
-    const jumlahBaru = keranjang.jumlah + perubahan;
+    const jumlahBaru = keranjang.jumlah + perubahan
 
     if (jumlahBaru < 1) {
-        toast.error('Jumlah Pesanan Minimal 1')
-        return;
+        toast.error('Jumlah pesanan minimal 1')
+        return
     }
 
     try {
         await api.patch(`/keranjangs/${keranjang.id}`, {
-            jumlah: jumlahBaru
-        });
-        keranjang.jumlah = jumlahBaru;
+            jumlah: jumlahBaru,
+            keterangan: keranjang.keterangan || ''
+        })
+
+        keranjang.jumlah = jumlahBaru
     } catch (e) {
-        toast.error('Gagal mengubah jumlah pesanan');
+        toast.error('Gagal mengubah jumlah pesanan')
+        console.error(e)
     }
 }
 
@@ -180,10 +186,13 @@ onMounted(async () => {
                                             <div class="flex items-center">
                                                 <img
                                                     class="h-16 w-16 mr-4"
-                                                    :src="`/gambar/${keranjang.products.gambar}`"
-                                                    :alt="keranjang.products.nama"
+                                                    :src="`/gambar/${keranjang.product.gambar}`"
+                                                    :alt="keranjang.product.nama"
                                                 />
-                                                <span class="font-semibold">{{ keranjang.products.nama }}</span>
+
+                                                <span class="font-semibold">
+                                                    {{ keranjang.product.nama }}
+                                                </span>
                                             </div>
                                         </td>
                                         <td class="py-4">{{ keranjang.keterangan }}</td>
@@ -200,9 +209,9 @@ onMounted(async () => {
                                                 </button>
                                             </div>
                                         </td>
-                                        <td class="py-4">{{ formatRupiah(keranjang.products.harga) }}</td>
+                                        <td class="py-4">{{ formatRupiah(keranjang.product.harga) }}</td>
                                         <td class="py-4">
-                                            {{ formatRupiah(keranjang.products.harga * keranjang.jumlah) }}
+                                            {{ formatRupiah(keranjang.product.harga * keranjang.jumlah) }}
                                         </td>
                                         <td class="py-4">
                                             <button

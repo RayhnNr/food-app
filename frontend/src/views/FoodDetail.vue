@@ -1,14 +1,15 @@
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '@/api'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useToast } from 'vue-toast-notification'
 import { useCart } from '@/composables/useCart'
 
 const { getCartCount } = useCart()
 const toast = useToast()
 const route = useRoute()
-const router = useRouter()     
+
 const food = ref(null)
 const pesan = ref({
     jumlah: 1,
@@ -16,35 +17,49 @@ const pesan = ref({
 })
 
 onMounted(async () => {
-  const res = await api.get(`/products/${route.params.id}`)
-  food.value = res.data
+    try {
+        const res = await api.get(`/products/${route.params.id}`)
+        food.value = res.data
+    } catch (e) {
+        toast.error('Gagal mengambil data produk')
+        console.error(e)
+    }
 })
 
 const pemesanan = async () => {
+    if (!food.value) {
+        toast.error('Data produk belum tersedia')
+        return
+    }
+
+    if (Number(pesan.value.jumlah) < 1) {
+        toast.error('Jumlah minimal 1')
+        return
+    }
+
     try {
-        const cek = await api.get('/keranjangs', {
-            params: { 'products.id': food.value.id },
+        await api.post('/keranjangs', {
+            product_id: food.value.id,
+            jumlah: Number(pesan.value.jumlah),
+            keterangan: pesan.value.keterangan.trim()
         })
 
-        if (cek.data.length > 0) {
-            const item = cek.data[0]
-            await api.patch(`/keranjangs/${item.id}`, {
-                jumlah: Number(item.jumlah) + Number(pesan.value.jumlah),
-                keterangan: pesan.value.keterangan || item.keterangan,
-            })
-            toast.success('Jumlah pesanan diperbarui')
-        } else {
-            pesan.value.products = food.value
-            await api.post('/keranjangs', pesan.value)
-            toast.success('Berhasil ditambahkan ke keranjang')
-        }
+        toast.success('Berhasil ditambahkan ke keranjang')
+
         await getCartCount()
     } catch (e) {
-        toast.error('Gagal menambah ke keranjang')
+        toast.error(
+            e.response?.data?.message ||
+            e.response?.data?.errors?.product_id ||
+            e.response?.data?.errors?.jumlah ||
+            'Gagal menambah ke keranjang'
+        )
+
         console.error(e)
     }
 }
 </script>
+
 
 <template>
     <section class="max-w-5xl mx-auto px-4 py-12">
