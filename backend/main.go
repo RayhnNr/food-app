@@ -41,6 +41,13 @@ func main() {
 
 	// Keranjang
 	r.GET("/keranjangs", handlers.GetKeranjang)
+	r.POST("/keranjangs", handlers.TambahKeranjang)
+	r.PATCH("/keranjangs/:id", handlers.UpdateKeranjang)
+	r.DELETE("/keranjangs/:id", handlers.DeleteKeranjang)
+	r.DELETE("/keranjangs", handlers.ClearKeranjang)
+
+	// Pesanan
+	r.GET("/pesanans", handlers.GetPesanans)
 
 	r.Run(":8080")
 }
