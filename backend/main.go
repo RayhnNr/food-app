@@ -47,6 +47,7 @@ func main() {
 	r.DELETE("/keranjangs", handlers.ClearKeranjang)
 
 	// Pesanan
+	r.GET("/pesanans", handlers.GetPesanans)
 	// Endpoint admin
 	admin := r.Group("/admin")
 	{
