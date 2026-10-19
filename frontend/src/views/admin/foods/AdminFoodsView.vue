@@ -79,10 +79,7 @@ watch(search, () => {
                     class="w-full px-4 py-2 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
-            <RouterLink
-                to="/admin/foods/tambah"
-                class="px-4 py-2 rounded-xl object-cover bg-emerald-600 text-white hover:bg-emerald-700"
-            >
+            <RouterLink to="/admin/foods/tambah" class="px-4 py-2 rounded-xl object-cover bg-emerald-600 text-white hover:bg-emerald-700">
                 <i class="fa-solid fa-plus mr-1"></i> Tambah
             </RouterLink>
         </div>
@@ -96,7 +93,7 @@ watch(search, () => {
                         <th class="py-3 px-2 text-left">Kode Product</th>
                         <th class="py-3 px-6 text-left">Makanan</th>
                         <th class="py-3 px-6 text-left">Harga</th>
-                        <th class="py-3 px-6 text-center">Actions</th>
+                        <th class="py-3 w-25 text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 text-sm">
@@ -105,12 +102,7 @@ watch(search, () => {
                             Makanan masih kosong.
                         </td>
                     </tr>
-                    <tr
-                        v-else
-                        v-for="(food, index) in foods"
-                        :key="food.id"
-                        class="border-b border-gray-200 hover:bg-gray-100"
-                    >
+                    <tr v-else v-for="(food, index) in foods" :key="food.id" class="border-b border-gray-200 hover:bg-gray-100">
                         <td class="py-3 px-6 text-left">
                             {{ index + 1 }}
                         </td>
@@ -128,47 +120,11 @@ watch(search, () => {
                         <td class="py-3 px-6 text-left">{{ formatRupiah(food.harga) }}</td>
                         <td class="py-3 px-6 text-left">
                             <div class="flex items-center justify-start gap-2">
-                                <RouterLink
-                                    :to="`/admin/foods/${food.id}/edit`"
-                                    :class="[actionButtonClass, 'border-blue-200 bg-blue-100']"
-                                    title="Edit menu"
-                                    aria-label="Edit menu"
-                                >
-                                    <svg
-                                        class="h-3.5 w-3.5"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                        />
-                                    </svg>
+                                <RouterLink :to="`/admin/foods/${food.id}/edit`" :class="[actionButtonClass, 'border-blue-200 bg-blue-100']" title="Edit menu" aria-label="Edit menu">
+                                    <i class="fa-solid fa-pencil"></i>
                                 </RouterLink>
-                                <button
-                                    @click="hapusMakanan(food.id)"
-                                    :class="[actionButtonClass, 'border-red-200 bg-red-100']"
-                                    title="Hapus menu"
-                                    aria-label="Hapus menu"
-                                >
-                                    <svg
-                                        class="h-3.5 w-3.5"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                        />
-                                    </svg>
+                                <button @click="hapusMakanan(food.id)" :class="[actionButtonClass, 'border-red-200 bg-red-100 cursor-pointer']" title="Hapus menu" aria-label="Hapus menu">
+                                    <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         </td>
