@@ -54,6 +54,29 @@ watch(search, () => {
 
         <p v-if="loading" class="mt-6 text-slate-500">Memuat data...</p>
         <p v-else-if="error" class="mt-6 text-red-600">{{ error }}</p>
+        
+        
+        <div
+            v-else-if="foods.length === 0"
+            class="flex flex-col items-center justify-center px-6 py-16 text-center"
+        >
+            <div
+                class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50"
+            >
+                <i class="fas fa-search text-3xl text-emerald-600"></i>
+            </div>
+
+            <h3 class="mb-2 text-lg font-semibold text-gray-800">
+                Makanan Tidak Ditemukan
+            </h3>
+
+            <p class="max-w-sm text-sm leading-6 text-gray-500">
+                Maaf, makanan yang kamu cari tidak tersedia.
+                Coba gunakan kata kunci lain.
+            </p>
+        </div>
+
+
 
         <div v-else class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <FoodCard v-for="food in foods" :key="food.id" :food="food" />
