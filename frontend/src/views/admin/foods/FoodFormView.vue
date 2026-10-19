@@ -134,9 +134,15 @@ watch(form, () => { errors.value = {} }, { deep: true },)
             </div>
 
             <!-- Tersedia -->
-            <label class="flex items-center gap-2">
-                <input v-model="form.is_ready" type="checkbox" /> Tersedia
+            <label class="relative inline-flex items-center cursor-pointer text-gray-900 gap-3">
+                <input type="checkbox" v-model="form.is_ready" class="sr-only peer" checked />
+                <div class="w-16 h-8 bg-slate-300 rounded-full peer peer-checked:bg-indigo-600 transition-colors duration-200"></div>
+                <span class="dot absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-8"></span>
+                Tersedia
             </label>
+            <!-- <label class="flex items-center gap-2">
+                <input v-model="form.is_ready" type="checkbox" /> Tersedia
+            </label> -->
 
             <!-- Tombol -->
             <div class="flex gap-3">
