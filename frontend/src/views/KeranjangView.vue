@@ -199,7 +199,7 @@ onMounted(async () => {
                 <!-- Tabel keranjang -->
                 <div class="w-full md:w-3/4">
                     <div class="bg-white rounded-md shadow-md p-3 sm:p-6">
-                        <div class="w-full overflow-x-auto">
+                        <div class="w-full overflow-x-auto lg:overflow-x-visible">
                             <table class="w-full min-w-225">
                                 <thead>
                                     <tr>
