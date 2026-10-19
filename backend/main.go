@@ -20,7 +20,6 @@ func main() {
 	)
 	r := gin.Default()
 
-	// CORS: izinkan Vue (Vite) memanggil API ini
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:5173"},
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -49,6 +48,7 @@ func main() {
 	// Pesanan
 	r.GET("/pesanans", handlers.GetPesanans)
 	r.POST("/pesanans", handlers.TambahPesanan)
+
 	// Endpoint admin
 	admin := r.Group("/admin")
 	{
