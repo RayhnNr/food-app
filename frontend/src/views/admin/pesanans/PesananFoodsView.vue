@@ -135,7 +135,7 @@ watch(search, () => {
                         <th class="py-3 px-6 text-left">Tanggal</th>
                         <th class="py-3 px-6 text-left">Total</th>
                         <th class="py-3 px-6 text-left">Status</th>
-                        <th class="py-3 px-6 text-center">Actions</th>
+                        <th class="py-3 text-center w-25">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 text-sm">
@@ -155,15 +155,8 @@ watch(search, () => {
                             {{ search ? 'Pesanan tidak ditemukan.' : 'Pesanan masih kosong.' }}
                         </td>
                     </tr>
-                    <tr
-                        v-else
-                        v-for="(pesanan, index) in pesanans"
-                        :key="pesanan.id"
-                        class="border-b border-gray-200 hover:bg-gray-100"
-                    >
-                        <td class="py-3 px-6 text-left">
-                            {{ index + 1 }}
-                        </td>
+                    <tr v-else v-for="(pesanan, index) in pesanans" :key="pesanan.id" class="border-b border-gray-200 hover:bg-gray-100">
+                        <td class="py-3 px-6 text-left">{{ index + 1 }}</td>
                         <td class="py-3 px-2 text-left">{{ pesanan.nama }}</td>
                         <td class="py-3 px-2 text-left">{{ pesanan.no_meja }}</td>
                         <td class="py-3 px-2 text-left">{{ formatTanggal(pesanan.tanggal) }}</td>
@@ -178,33 +171,10 @@ watch(search, () => {
                         </td>
                         <td class="py-3 px-6 text-left">
                             <div class="flex items-center justify-start gap-2">
-                                <RouterLink
-                                    v-if="pesanan.status !== 'selesai'"
-                                    :to="`/admin/pesanans/${pesanan.id}/edit`"
-                                    :class="[actionButtonClass, 'border-blue-200 bg-blue-100']"
-                                    title="Edit pesanan"
-                                    aria-label="Edit pesanan"
-                                >
-                                    <svg
-                                        class="h-3.5 w-3.5"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                        />
-                                    </svg>
+                                <RouterLink v-if="pesanan.status !== 'selesai'" :to="`/admin/pesanans/${pesanan.id}/edit`" :class="[actionButtonClass, 'border-blue-200 bg-blue-100']" title="Edit pesanan" aria-label="Edit pesanan">
+                                    <i class="fa-solid fa-pencil"></i>
                                 </RouterLink>
-                                <button
-                                    v-if="pesanan.status !== 'selesai'"
-                                    @click="ubahStatus(pesanan)"
-                                    title="Tandai selesai"
-                                    aria-label="Tandai selesai"
+                                <button v-if="pesanan.status !== 'selesai'" @click="ubahStatus(pesanan)" title="Tandai selesai" aria-label="Tandai selesai"
                                     :class="[
                                         actionButtonClass,
                                         'border-emerald-200 bg-emerald-100',
@@ -212,22 +182,21 @@ watch(search, () => {
                                 >
                                     <i class="fa-solid fa-check text-sm"></i>
                                 </button>
-                                <button
-                                    @click="bukaDetail(pesanan)"
-                                    title="Detail"
-                                    aria-label="Detail pesanan"
-                                    :class="[actionButtonClass, 'border-sky-200 bg-sky-100']"
+                                <button @click="bukaDetail(pesanan)" title="Detail"aria-label="Detail pesanan"
+                                    :class="[
+                                        actionButtonClass, 
+                                        'border-sky-200 bg-sky-100'
+                                    ]"
                                 >
                                     <i class="fa-solid fa-eye text-sm"></i>
                                 </button>
-                                <button
-                                    v-if="pesanan.status !== 'selesai'"
-                                    @click="hapusPesanan(pesanan.id)"
-                                    title="Hapus pesanan"
-                                    aria-label="Hapus pesanan"
-                                    :class="[actionButtonClass, 'border-red-200 bg-red-100']"
+                                <button v-if="pesanan.status !== 'selesai'" @click="hapusPesanan(pesanan.id)" title="Hapus pesanan" aria-label="Hapus pesanan"
+                                    :class="[
+                                        actionButtonClass, 
+                                        'border-red-200 bg-red-100'
+                                    ]"
                                 >
-                                    <i class="fa-solid fa-trash text-sm"></i>
+                                    <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         </td>
