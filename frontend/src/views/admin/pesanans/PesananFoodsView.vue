@@ -157,12 +157,12 @@ watch(search, () => {
                     </tr>
                     <tr
                         v-else
-                        v-for="pesanan in pesanans"
+                        v-for="(pesanan, index) in pesanans"
                         :key="pesanan.id"
                         class="border-b border-gray-200 hover:bg-gray-100"
                     >
                         <td class="py-3 px-6 text-left">
-                            {{ pesanan.id }}
+                            {{ index + 1 }}
                         </td>
                         <td class="py-3 px-2 text-left">{{ pesanan.nama }}</td>
                         <td class="py-3 px-2 text-left">{{ pesanan.no_meja }}</td>
