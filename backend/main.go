@@ -2,8 +2,8 @@ package main
 
 import (
 	"food-api/database"
-	"food-api/models"
 	"food-api/handlers"
+	"food-api/models"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -48,6 +48,7 @@ func main() {
 
 	// Pesanan
 	r.GET("/pesanans", handlers.GetPesanans)
+	r.POST("/pesanans", handlers.TambahPesanan)
 	// Endpoint admin
 	admin := r.Group("/admin")
 	{
