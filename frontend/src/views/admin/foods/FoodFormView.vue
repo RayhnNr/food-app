@@ -1,12 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'vue-toast-notification'
+import Swal from 'sweetalert2'
 import api from '@/api'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 
 const isEdit = computed(() => !!route.params.id)
 
@@ -20,10 +19,31 @@ const form = ref({
 
 const errors = ref({})
 
+const formatHarga = (value) => {
+    const angka = value.replace(/\D/g, '')
+
+    form.value.harga = angka === '' ? '' : Number(angka)
+
+    return angka.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
+const handleHarga = (event) => {
+    event.target.value = formatHarga(event.target.value)
+}
+
 onMounted(async () => {
     if (isEdit.value) {
-        const res = await api.get(`/products/${route.params.id}`)
-        form.value = res.data
+        try {
+            const res = await api.get(`/products/${route.params.id}`)
+            form.value = res.data
+        } catch (e) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Gagal mengambil data menu',
+            })
+            console.error(e)
+        }
     }
 })
 
@@ -52,20 +72,37 @@ const simpan = async () => {
     try {
         if (isEdit.value) {
             await api.put(`/products/${route.params.id}`, form.value)
-            toast.success('Berhasil diperbarui')
         } else {
             await api.post('/products', form.value)
-            toast.success('Berhasil ditambahkan')
         }
+
+        await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: isEdit.value ? 'Berhasil diperbarui' : 'Berhasil ditambahkan',
+            timer: 1500,
+            showConfirmButton: false,
+        })
+
         router.push('/admin/foods')
     } catch (e) {
-        toast.error('Gagal menyimpan')
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: e.response?.data?.message || 'Gagal menyimpan',
+        })
         console.error(e)
     }
 }
 
 // Hapus pesan error ketika pengguna mulai memperbaiki isian
-watch(form, () => { errors.value = {} }, { deep: true },)
+watch(
+    form,
+    () => {
+        errors.value = {}
+    },
+    { deep: true },
+)
 </script>
 
 <template>
@@ -109,10 +146,13 @@ watch(form, () => { errors.value = {} }, { deep: true },)
 
             <!-- Harga -->
             <div>
-                <label class="block text-sm font-medium mb-1">Harga</label>
+                <label class="block text-sm font-medium mb-1">Harga</label>       
                 <input
-                    v-model.number="form.harga"
-                    type="number"
+                    :value="form.harga === '' ? '' : Number(form.harga).toLocaleString('id-ID')"
+                    @input="handleHarga"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="Contoh: 1.500.000"
                     class="w-full px-4 py-2 rounded-xl border focus:outline-none focus:ring-4"
                     :class="
                         errors.harga

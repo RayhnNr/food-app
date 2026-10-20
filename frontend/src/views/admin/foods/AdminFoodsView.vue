@@ -1,17 +1,25 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import api from '@/api';
-import { useToast } from 'vue-toast-notification';
+import Swal from 'sweetalert2';
 import { useCart } from '@/composables/useCart';
 
 const foods = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const search = ref('');
-const toast = useToast();
 const { getCartCount } = useCart();
 const actionButtonClass =
     'inline-flex h-9 w-9 items-center justify-center rounded-md border text-gray-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
+
+// Toast kecil ala SweetAlert
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+});
 
 const getFoods = async () => {
     loading.value = true;
@@ -28,13 +36,23 @@ const getFoods = async () => {
         foods.value = res.data.data;
     } catch (e) {
         error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
+        console.error(e);
     } finally {
         loading.value = false;
     }
 };
 
 const hapusMakanan = async (id) => {
-    if (!confirm('Apakah anda yakin ingin mengahapus Makanan ini?')) {
+    const result = await Swal.fire({
+        title: 'Yakin hapus makanan ini?',
+        text: 'Data tidak bisa dikembalikan',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -42,9 +60,10 @@ const hapusMakanan = async (id) => {
         await api.delete(`/products/${id}`);
         await getCartCount();
         foods.value = foods.value.filter((item) => item.id !== id);
-        toast.success('Berhasil Mengahapus Makanan');
+        Toast.fire({ icon: 'success', title: 'Berhasil menghapus makanan' });
     } catch (e) {
-        toast.error('Gagal menghapus Makanan');
+        Toast.fire({ icon: 'error', title: 'Gagal menghapus makanan' });
+        console.error(e);
     }
 };
 
@@ -62,6 +81,10 @@ let timer;
 watch(search, () => {
     clearTimeout(timer);
     timer = setTimeout(getFoods, 400);
+});
+
+onBeforeUnmount(() => {
+    clearTimeout(timer);
 });
 </script>
 

@@ -1,12 +1,11 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useToast } from 'vue-toast-notification';
+import Swal from 'sweetalert2';
 import api from '@/api';
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
 
 const loading = ref(true);
 const saving = ref(false);
@@ -41,9 +40,7 @@ const muatPesanan = async () => {
     loadError.value = '';
 
     try {
-        const { data } = await api.get(
-            `/admin/pesanans/${route.params.id}`,
-        );
+        const { data } = await api.get(`/admin/pesanans/${route.params.id}`);
 
         form.value = {
             ...data,
@@ -52,7 +49,11 @@ const muatPesanan = async () => {
         };
     } catch (error) {
         loadError.value = 'Pesanan gagal dimuat.';
-        toast.error(loadError.value);
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: loadError.value,
+        });
         console.error(error);
     } finally {
         loading.value = false;
@@ -103,20 +104,30 @@ const simpan = async () => {
             })),
         });
 
-        toast.success('Pesanan berhasil diperbarui');
+        await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Pesanan berhasil diperbarui',
+            timer: 1500,
+            showConfirmButton: false,
+        });
+
         router.push('/admin/pesanans');
     } catch (error) {
-        toast.error(
-            error.response?.data?.message ||
-                'Gagal memperbarui pesanan',
-        );
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: error.response?.data?.message || 'Gagal memperbarui pesanan',
+        });
         console.error(error);
     } finally {
         saving.value = false;
     }
 };
 
-watch(form, () => {
+watch(
+    form,
+    () => {
         errors.value = {};
     },
     { deep: true },

@@ -1,19 +1,27 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import api from '@/api';
-import { useToast } from 'vue-toast-notification';
-import { useCart } from '@/composables/useCart';
+import Swal from 'sweetalert2';
 import Modal from '@/components/Modal.vue';
+import { swal } from 'sweetalert2/dist/sweetalert2';
 
 const pesanans = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const search = ref('');
-const toast = useToast();
 const showModal = ref(false);
 const pesananDipilih = ref(null);
 const actionButtonClass =
     'inline-flex h-9 w-9 items-center justify-center rounded-md border text-gray-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
+
+// Toast kecil ala SweetAlert
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+});
 
 const bukaDetail = (pesanan) => {
     pesananDipilih.value = pesanan; // kirim data ke modal
@@ -38,26 +46,49 @@ const getPesanan = async () => {
         pesanans.value = Array.isArray(res.data) ? res.data : [];
     } catch (e) {
         error.value = 'Gagal mengambil data pesanan. Pastikan backend aktif.';
+        console.error(e);
     } finally {
         loading.value = false;
     }
 };
 
 const hapusPesanan = async (id) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus pesanan ini?')) {
+    const result = await Swal.fire({
+        title: 'Yakin hapus pesanan ini?',
+        text: 'Data tidak bisa dikembalikan',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
     try {
         await api.delete(`/admin/pesanans/${id}`);
         pesanans.value = pesanans.value.filter((item) => item.id !== id);
-        toast.success('Pesanan berhasil dihapus');
+        Toast.fire({ icon: 'success', title: 'Pesanan berhasil dihapus' });
     } catch (e) {
-        toast.error('Gagal menghapus pesanan');
+        Toast.fire({ icon: 'error', title: 'Gagal menghapus pesanan' });
+        console.error(e);
     }
 };
 
 const ubahStatus = async (pesanan) => {
+    var konfirmasi = await Swal.fire({
+        title: 'Apakah kamu yakin?',
+        text: 'Status pesanan akan diperbarui',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, simpan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#64748b',
+    })
+
+    if (!konfirmasi.isConfirmed) return
     try {
         await api.put(`/admin/pesanans/${pesanan.id}`, {
             nama: pesanan.nama,
@@ -69,11 +100,11 @@ const ubahStatus = async (pesanan) => {
                 keterangan: item.keterangan || '',
             })),
         });
-        toast.success('Status pesanan berhasil diperbarui');
+        Toast.fire({ icon: 'success', title: 'Status pesanan berhasil diperbarui' });
         await getPesanan();
-    } catch (error) {
-        toast.error('Gagal memperbarui status');
-        console.error(error);
+    } catch (e) {
+        Toast.fire({ icon: 'error', title: 'Gagal memperbarui status' });
+        console.error(e);
     }
 };
 
@@ -96,6 +127,7 @@ const formatTanggal = (iso) => {
         timeZone: 'Asia/Jakarta',
     });
 };
+
 const warnaStatus = (status) =>
     status === 'selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
 
@@ -105,6 +137,10 @@ let timer;
 watch(search, () => {
     clearTimeout(timer);
     timer = setTimeout(getPesanan, 400);
+});
+
+onBeforeUnmount(() => {
+    clearTimeout(timer);
 });
 </script>
 

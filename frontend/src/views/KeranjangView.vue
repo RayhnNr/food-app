@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import api from '@/api';
-import { useToast } from 'vue-toast-notification';
+import Swal from 'sweetalert2';
 import { useCart } from '@/composables/useCart';
 
 const { getCartCount } = useCart();
@@ -11,10 +11,18 @@ const loading = ref(true);
 const errorKeranjang = ref(null);
 const errorPesanan = ref(null);
 const tabAktif = ref('keranjang');
-const toast = useToast();
 const pesan = ref({
     nama: '',
     noMeja: '',
+});
+
+// Toast kecil ala SweetAlert
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
 });
 
 function formatRupiah(angka) {
@@ -57,12 +65,20 @@ const getPesanans = async () => {
 
 const checkout = async () => {
     if (!pesan.value.nama.trim() || !pesan.value.noMeja || Number(pesan.value.noMeja) <= 0) {
-        toast.error('Nama dan Nomor Meja harus diisi');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Data belum lengkap',
+            text: 'Nama dan Nomor Meja harus diisi',
+        });
         return;
     }
 
     if (keranjangs.value.length === 0) {
-        toast.error('Keranjang masih kosong, silakan pilih makanan terlebih dahulu');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Keranjang kosong',
+            text: 'Silakan pilih makanan terlebih dahulu',
+        });
         return;
     }
 
@@ -81,9 +97,17 @@ const checkout = async () => {
         await getCartCount();
         await getPesanans();
 
-        toast.success('Pesanan berhasil dibuat');
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Pesanan berhasil dibuat',
+        });
     } catch (e) {
-        toast.error(e.response?.data?.message || 'Gagal membuat pesanan');
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: e.response?.data?.message || 'Gagal membuat pesanan',
+        });
         console.error(e);
     }
 };
@@ -92,7 +116,16 @@ const warnaStatus = (status) =>
     status === 'selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
 
 const hapusPesanan = async (id) => {
-    if (!confirm('Apakah anda yakin ingin menghapus pesanan ini?')) {
+    const result = await Swal.fire({
+        title: 'Yakin hapus pesanan ini?',
+        text: 'Data tidak bisa dikembalikan',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -100,9 +133,10 @@ const hapusPesanan = async (id) => {
         await api.delete(`/keranjangs/${id}`);
         await getCartCount();
         keranjangs.value = keranjangs.value.filter((item) => item.id !== id);
-        toast.success('Berhasil menghapus pesanan');
+        Toast.fire({ icon: 'success', title: 'Berhasil menghapus pesanan' });
     } catch (e) {
-        toast.error('Gagal menghapus pesanan');
+        Toast.fire({ icon: 'error', title: 'Gagal menghapus pesanan' });
+        console.error(e);
     }
 };
 
@@ -110,7 +144,7 @@ const ubahJumlah = async (keranjang, perubahan) => {
     const jumlahBaru = keranjang.jumlah + perubahan;
 
     if (jumlahBaru < 1) {
-        toast.error('Jumlah pesanan minimal 1');
+        Toast.fire({ icon: 'error', title: 'Jumlah pesanan minimal 1' });
         return;
     }
 
@@ -122,7 +156,7 @@ const ubahJumlah = async (keranjang, perubahan) => {
 
         keranjang.jumlah = jumlahBaru;
     } catch (e) {
-        toast.error('Gagal mengubah jumlah pesanan');
+        Toast.fire({ icon: 'error', title: 'Gagal mengubah jumlah pesanan' });
         console.error(e);
     }
 };
