@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/auth';
 
@@ -12,15 +12,49 @@ const password = ref('');
 const error = ref('');
 const loading = ref(false);
 
+// Captcha
+const captchaToken = ref('');
+const captchaEl = ref(null);
+let widgetId = null;
+let timer = null;
+
+onMounted(() => {
+    // tunggu script Google selesai dimuat
+    timer = setInterval(() => {
+        if (window.grecaptcha && window.grecaptcha.render) {
+            clearInterval(timer);
+            widgetId = window.grecaptcha.render(captchaEl.value, {
+                sitekey: import.meta.env.VITE_RECAPTCHA_SITEKEY,
+                callback: (token) => (captchaToken.value = token),
+                'expired-callback': () => (captchaToken.value = ''),
+            });
+        }
+    }, 100);
+});
+
+onUnmounted(() => clearInterval(timer));
+
+function resetCaptcha() {
+    if (widgetId !== null) window.grecaptcha.reset(widgetId);
+    captchaToken.value = '';
+}
+
 async function handleRegister() {
     if (loading.value) return;
     error.value = '';
     loading.value = true;
 
+    if (!captchaToken.value) {
+        error.value = 'Centang captcha terlebih dahulu.'
+        return
+    }
+
+
     try {
-        await register(name.value.trim(), email.value.trim(), password.value);
+        await register(name.value.trim(), email.value.trim(), password.value, captchaToken.value);
         await router.push(user.value?.role === 'admin' ? '/admin/dashboard' : '/');
     } catch (err) {
+        resetCaptcha()
         error.value = err.response?.data?.message || 'Registrasi gagal. Coba lagi.';
     } finally {
         loading.value = false;
@@ -108,6 +142,7 @@ async function handleRegister() {
                         class="w-full rounded-md border-[1.5px] border-[#cfd6d1] bg-white px-3.5 py-3 text-base focus-visible:border-[#12372a] focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-[#f2b705]"
                     />
                 </div>
+                <div ref="captchaEl"></div>
 
                 <button
                     type="submit"

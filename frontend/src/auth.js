@@ -14,13 +14,22 @@ function simpanSesi(data) {
 export function useAuth() {
     const isLoggedIn = computed(() => !!token.value);
 
-    async function login(email, password) {
-        const res = await api.post('/auth/login', { email, password });
+    async function login(email, password, captchaToken) {
+        const res = await api.post('/auth/login', {
+            email,
+            password,
+            captcha_token: captchaToken,
+        });
         simpanSesi(res.data);
     }
 
-    async function register(name, email, password) {
-        const res = await api.post('/auth/register', { name, email, password });
+    async function register(name, email, password, captchaToken) {
+        const res = await api.post('/auth/register', { 
+            name, 
+            email, 
+            password,
+            captcha_token: captchaToken,
+        });
         simpanSesi(res.data); // register sudah langsung auto-login
     }
 
