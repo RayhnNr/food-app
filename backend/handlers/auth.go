@@ -16,12 +16,14 @@ type RegisterRequest struct {
 	Name     string `json:"name" binding:"required,min=3,max=100"`
 	Email    string `json:"email" binding:"required,email,max=100"`
 	Password string `json:"password" binding:"required,min=6,max=100"`
+	CaptchaToken string `json:"captcha_token"`
 }
 
 // LoginRequest struktur untuk validasi input login
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
+	CaptchaToken string `json:"captcha_token"`
 }
 
 type AuthResponse struct {
@@ -40,6 +42,12 @@ func Login(c *gin.Context) {
 			"message": err.Error(),
 		})
 		return // <- tambah
+	}
+	if !verifyCaptcha(req.CaptchaToken, c.ClientIP()) {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"errors": map[string]string{"captcha": "Verifikasi captcha gagal"},
+		})
+		return
 	}
 
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
@@ -93,6 +101,13 @@ func Register(c *gin.Context) {
 			"message": err.Error(),
 		})
 		return // <- tambah
+	}
+
+	if !verifyCaptcha(req.CaptchaToken, c.ClientIP()) {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"errors": map[string]string{"captcha": "Verifikasi captcha gagal"},
+		})
+		return
 	}
 
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
