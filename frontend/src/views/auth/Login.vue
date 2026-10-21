@@ -36,18 +36,11 @@ async function handleLogin() {
 </script>
 
 <template>
-    <main
-        class="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr] text-[#1b2420] md:grid-cols-[5fr_6fr] md:grid-rows-1"
-    >
+    <main class="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr] text-[#1b2420] md:grid-cols-[5fr_6fr] md:grid-rows-1">
         <!-- Panel kiri -->
-        <aside
-            aria-hidden="true"
-            class="flex flex-col justify-center gap-3 bg-[#12372a] px-5 py-6 text-white md:gap-8 md:px-12 md:py-12 lg:px-16"
-        >
+        <aside aria-hidden="true" class="flex flex-col justify-center gap-3 bg-[#12372a] px-5 py-6 text-white md:gap-8 md:px-12 md:py-12 lg:px-16">
 
-            <h2
-                class="max-w-[14ch] text-3xl font-extrabold leading-[1.05] tracking-tight md:text-5xl lg:text-6xl"
-            >
+            <h2 class="max-w-[14ch] text-3xl font-extrabold leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
                 Lapar? Pilih, pesan, tinggal makan.
             </h2>
         </aside>

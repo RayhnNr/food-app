@@ -2,12 +2,27 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/auth';
+import Swal from 'sweetalert2';
 
 const sidebarOpen = ref(false);
 const router = useRouter();
 const { logout } = useAuth();
 
-function handleLogout() {
+async function handleLogout() {
+    const result = await Swal.fire({
+        title: 'Yakin ingin logout?',
+        text: 'Anda harus login kembali untuk mengakses akun.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, logout',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+    });
+
+    if (!result.isConfirmed) {
+        return;
+    }
     logout();
     router.replace('/login');
 }

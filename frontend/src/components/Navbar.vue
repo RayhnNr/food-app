@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/auth';
+import Swal from 'sweetalert2';
 
 defineProps({
     cartCount: {
@@ -14,11 +15,28 @@ const menuOpen = ref(false);
 const router = useRouter();
 const { isLoggedIn, logout } = useAuth();
 
-function handleLogout() {
+
+async function handleLogout() {
+    const result = await Swal.fire({
+        title: 'Yakin ingin logout?',
+        text: 'Anda harus login kembali untuk mengakses akun.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, logout',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+    });
+
+    if (!result.isConfirmed) {
+        return;
+    }
+
     logout();
     menuOpen.value = false;
     router.replace('/login');
 }
+
 
 const links = [
     { to: '/', label: 'Home', icon: 'fa-house' },
