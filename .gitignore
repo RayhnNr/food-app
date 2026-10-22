@@ -16,6 +16,7 @@ backend/*.exe
 backend/*.test
 backend/*.out
 backend/vendor/
+backend/uploads
 backend/build-errors.log
 
 # ===== Rahasia / environment =====
