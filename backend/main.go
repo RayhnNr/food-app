@@ -20,6 +20,7 @@ func main() {
 
 	database.Connect()
 	database.DB.AutoMigrate(
+		&models.Category{},
 		&models.Product{},
 		&models.Keranjang{},
 		&models.Pesanan{},
@@ -60,6 +61,12 @@ func main() {
 		auth.PUT("/products/:id", handlers.UpdateProduct)
 		auth.DELETE("/products/:id", handlers.DeleteProduct)
 		auth.POST("/upload", handlers.UploadGambar)
+
+		// Category
+		auth.GET("/category", handlers.GetCategory)
+		auth.POST("/category", handlers.CreateCategory)
+		auth.PUT("/category/:id", handlers.UpdateCategory)
+		auth.PUT("/category/:id", handlers.DeleteCategory)
 
 		// Keranjang
 		auth.GET("/keranjangs", handlers.GetKeranjang)

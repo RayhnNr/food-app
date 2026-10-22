@@ -5,6 +5,8 @@ import (
 	"food-api/middlewares"
 	"food-api/models"
 	"net/http"
+	"os"
+
 	// "os/user"
 	"strings"
 
@@ -43,12 +45,15 @@ func Login(c *gin.Context) {
 		})
 		return // <- tambah
 	}
-	if !verifyCaptcha(req.CaptchaToken, c.ClientIP()) {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"errors": map[string]string{"captcha": "Verifikasi captcha gagal"},
-		})
-		return
+	if os.Getenv("APP_ENV") != "dev" {
+		if !verifyCaptcha(req.CaptchaToken, c.ClientIP()) {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"errors": map[string]string{"captcha": "Verifikasi captcha gagal"},
+			})
+			return
+		}
 	}
+	
 
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
 
