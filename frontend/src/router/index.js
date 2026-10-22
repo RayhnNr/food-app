@@ -15,6 +15,7 @@ import PesananFoodsView from '@/views/admin/pesanans/PesananFoodsView.vue';
 import PesananEditView from '@/views/admin/pesanans/PesananEdit.View.vue';
 import LoginView from '@/views/auth/Login.vue';
 import RegisterView from '@/views/auth/Register.vue';
+import CategoryView from '@/views/admin/category/CategoryView.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -47,6 +48,7 @@ const router = createRouter({
                 { path: 'foods', component: AdminFoodsView },
                 { path: 'foods/tambah', component: FoodFormView },
                 { path: 'foods/:id/edit', component: FoodFormView },
+                { path: 'category', component: CategoryView },
                 { path: 'pesanans', component: PesananFoodsView },
                 { path: 'pesanans/:id/edit', component: PesananEditView },
             ],

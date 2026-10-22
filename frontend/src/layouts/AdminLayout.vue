@@ -30,6 +30,7 @@ async function handleLogout() {
 const menus = [
     { to: '/admin/dashboard', label: 'Dashboard', icon: 'fa-gauge' },
     { to: '/admin/foods', label: 'Kelola Menu', icon: 'fa-utensils' },
+    { to: '/admin/category', label: 'Data Category', icon: 'fa-utensils' },
     { to: '/admin/pesanans', label: 'Pesanans', icon: 'fa-receipt' },
 ];
 </script>
