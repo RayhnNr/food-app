@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"food-api/database"
@@ -21,14 +21,11 @@ type ProductInput struct {
 }
 
 func generateKode() (string, error){
-	var last models.Product
-	err := database.DB.Order("id DESC").First(&last).Error
-
-	if err != nil {
-		return "K-01", nil
-	}
-
-	angka, err := strconv.Atoi(strings.TrimPrefix(last.Kode, "K-"))
+	var angka int
+	err := database.DB.Model(&models.Product{}).
+		Select("COALESCE(MAX(CAST(SUBSTRING(kode FROM 3) AS INTEGER)), 0)").
+		Where("kode ~ ?", "^K-[0-9]+$").
+		Scan(&angka).Error
 	if err != nil {
 		return "", err
 	}
@@ -113,6 +110,7 @@ func CreateProduct(c *gin.Context) {
 	}
 
 	if err := database.DB.Create(&product).Error; err != nil{
+		log.Printf("gagal menyimpan produk: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Gagal menyimpan",
 		})

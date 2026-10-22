@@ -28,6 +28,10 @@ func main() {
 	)
 
 	r := gin.Default()
+	
+
+	r.MaxMultipartMemory = 5 << 20
+	r.Static("/uploads", "./uploads")
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:5173"},
@@ -55,6 +59,7 @@ func main() {
 		auth.POST("/products", handlers.CreateProduct)
 		auth.PUT("/products/:id", handlers.UpdateProduct)
 		auth.DELETE("/products/:id", handlers.DeleteProduct)
+		auth.POST("/upload", handlers.UploadGambar)
 
 		// Keranjang
 		auth.GET("/keranjangs", handlers.GetKeranjang)
@@ -74,6 +79,7 @@ func main() {
 			admin.GET("/pesanans/:id", handlers.GetPesanan)
 			admin.PUT("/pesanans/:id", handlers.UpdatePesanan)
 			admin.DELETE("/pesanans/:id", handlers.HapusPesanan)
+			
 		}
 	}
 
