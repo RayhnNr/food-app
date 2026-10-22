@@ -3,6 +3,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import api, { productImageUrl, fallbackProductImage } from '@/api';
 import Swal from 'sweetalert2';
 import { useCart } from '@/composables/useCart';
+import ProductQrCode from '@/components/ProductQrCode.vue';
 
 const foods = ref([]);
 const loading = ref(true);
@@ -118,6 +119,7 @@ onBeforeUnmount(() => {
                         <th class="py-3 px-6 text-left">ID</th>
                         <th class="py-3 px-2 text-left">Kode Product</th>
                         <th class="py-3 px-6 text-left">Makanan</th>
+                        <th class="py-3 px-6 text-left">QR Code</th>
                         <th class="py-3 px-6 text-left">Harga</th>
                         <th class="py-3 w-25 text-center">Actions</th>
                     </tr>
@@ -148,6 +150,9 @@ onBeforeUnmount(() => {
                                 />
                                 <span class="font-semibold">{{ food.nama }}</span>
                             </div>
+                        </td>
+                        <td class="text-center">
+                            <ProductQrCode :kode-produk="food.kode" :size="60" />
                         </td>
                         <td class="py-3 px-6 text-left">{{ formatRupiah(food.harga) }}</td>
                         <td class="py-3 px-6 text-left">

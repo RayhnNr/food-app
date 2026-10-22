@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '@/api';
+import ProductQrCode from '@/components/ProductQrCode.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -174,6 +175,9 @@ watch(
 
         <form @submit.prevent="simpan" novalidate class="space-y-4">
             <!-- Kode (hanya saat edit, tidak bisa diubah) -->
+            <div v-if="isEdit">
+                <ProductQrCode :kode-produk="form.kode" :size="100" />
+            </div>
             <div v-if="isEdit">
                 <label class="block text-sm font-medium mb-1">Kode</label>
                 <input
