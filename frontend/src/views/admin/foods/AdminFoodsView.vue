@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import api from '@/api';
+import api, { productImageUrl, fallbackProductImage } from '@/api';
 import Swal from 'sweetalert2';
 import { useCart } from '@/composables/useCart';
 
@@ -102,7 +102,10 @@ onBeforeUnmount(() => {
                     class="w-full px-4 py-2 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
-            <RouterLink to="/admin/foods/tambah" class="px-4 py-2 rounded-xl object-cover bg-emerald-600 text-white hover:bg-emerald-700">
+            <RouterLink
+                to="/admin/foods/tambah"
+                class="px-4 py-2 rounded-xl object-cover bg-emerald-600 text-white hover:bg-emerald-700"
+            >
                 <i class="fa-solid fa-plus mr-1"></i> Tambah
             </RouterLink>
         </div>
@@ -125,7 +128,12 @@ onBeforeUnmount(() => {
                             Makanan masih kosong.
                         </td>
                     </tr>
-                    <tr v-else v-for="(food, index) in foods" :key="food.id" class="border-b border-gray-200 hover:bg-gray-100">
+                    <tr
+                        v-else
+                        v-for="(food, index) in foods"
+                        :key="food.id"
+                        class="border-b border-gray-200 hover:bg-gray-100"
+                    >
                         <td class="py-3 px-6 text-left">
                             {{ index + 1 }}
                         </td>
@@ -134,7 +142,8 @@ onBeforeUnmount(() => {
                             <div class="flex items-center">
                                 <img
                                     class="h-16 w-16 mr-4"
-                                    :src="`/gambar/${food.gambar}`"
+                                    :src="productImageUrl(food.gambar)"
+                                    @error="fallbackProductImage($event, food.gambar)"
                                     :alt="food.nama"
                                 />
                                 <span class="font-semibold">{{ food.nama }}</span>
@@ -143,10 +152,23 @@ onBeforeUnmount(() => {
                         <td class="py-3 px-6 text-left">{{ formatRupiah(food.harga) }}</td>
                         <td class="py-3 px-6 text-left">
                             <div class="flex items-center justify-start gap-2">
-                                <RouterLink :to="`/admin/foods/${food.id}/edit`" :class="[actionButtonClass, 'border-blue-200 bg-blue-100']" title="Edit menu" aria-label="Edit menu">
+                                <RouterLink
+                                    :to="`/admin/foods/${food.id}/edit`"
+                                    :class="[actionButtonClass, 'border-blue-200 bg-blue-100']"
+                                    title="Edit menu"
+                                    aria-label="Edit menu"
+                                >
                                     <i class="fa-solid fa-pencil"></i>
                                 </RouterLink>
-                                <button @click="hapusMakanan(food.id)" :class="[actionButtonClass, 'border-red-200 bg-red-100 cursor-pointer']" title="Hapus menu" aria-label="Hapus menu">
+                                <button
+                                    @click="hapusMakanan(food.id)"
+                                    :class="[
+                                        actionButtonClass,
+                                        'border-red-200 bg-red-100 cursor-pointer',
+                                    ]"
+                                    title="Hapus menu"
+                                    aria-label="Hapus menu"
+                                >
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
