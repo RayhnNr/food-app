@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '@/api';
+import { productImageUrl, fallbackProductImage } from '@/api';
 import { useRoute } from 'vue-router';
 import Swal from 'sweetalert2';
 import { useCart } from '@/composables/useCart';
@@ -78,7 +79,8 @@ const pemesanan = async () => {
         <div v-else class="grid md:grid-cols-2 gap-10 items-center">
             <!-- Gambar -->
             <img
-                :src="`/gambar/${food.gambar}`"
+                :src="productImageUrl(food.gambar)"
+                @error="fallbackProductImage($event, food.gambar)"
                 :alt="food.nama"
                 class="w-full h-72 md:h-120 object-cover rounded-2xl shadow-md"
             />
