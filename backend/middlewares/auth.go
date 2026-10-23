@@ -14,28 +14,33 @@ import (
 )
 
 type Claims struct {
-	UserID uint   `json:"user_id"`
-	Email  string `json:"email"`
-	Name   string `json:"name"`
+	UserID   uint   `json:"user_id"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Username string `json:"username"` // Tambahkan ini
+	Role     string `json:"role"`     // Tambahkan ini
 	jwt.RegisteredClaims
 }
 
+
 // Generate JWT Token baru untuk user
-func GenerateToken(userID uint, email, name string) (string, error) {
+func GenerateToken(userID uint, email string, name string, username string, role string) (string, error) {
 	// Waktu Expired token
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	// membuat claim (payload) untuk token
 	claims := &Claims{
-		UserID: userID,
-		Email: email,
-		Name: name,
+		UserID:   userID,
+		Email:    email,
+		Name:     name,
+		Username: username,
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			IssuedAt: jwt.NewNumericDate(time.Now()),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer: "go-gin-auth-api",
-			Subject: fmt.Sprintf("%d", userID),
+			Issuer:    "go-gin-auth-api",
+			Subject:   fmt.Sprintf("%d", userID),
 		},
 	}
 
@@ -129,6 +134,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Set("userID", claims.UserID)
 		c.Set("userEmail", claims.Email)
 		c.Set("userName", claims.Name)
+		c.Set("userUsername", claims.Username) // Tambahkan ini
+		c.Set("userRole", claims.Role)  
 		c.Set("claims", claims)
 
 		// Lanjur ke hendler berikutnya
