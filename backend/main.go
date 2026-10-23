@@ -25,7 +25,9 @@ func main() {
 		&models.Keranjang{},
 		&models.Pesanan{},
 		&models.PesananItem{},
-		&models.User{},
+		&models.User{}, 
+		&models.CoaType{}, 
+		&models.Coa{},
 	)
 
 	r := gin.Default()
