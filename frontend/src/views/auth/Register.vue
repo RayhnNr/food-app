@@ -7,7 +7,9 @@ const router = useRouter();
 const { register, user } = useAuth();
 
 const name = ref('');
+const username = ref(''); // Tambahan field username
 const email = ref('');
+const phone = ref('');    // Tambahan field phone
 const password = ref('');
 const error = ref('');
 const loading = ref(false);
@@ -19,7 +21,6 @@ let widgetId = null;
 let timer = null;
 
 onMounted(() => {
-    // tunggu script Google selesai dimuat
     timer = setInterval(() => {
         if (window.grecaptcha && window.grecaptcha.render) {
             clearInterval(timer);
@@ -42,20 +43,30 @@ function resetCaptcha() {
 async function handleRegister() {
     if (loading.value) return;
     error.value = '';
-    loading.value = true;
 
     if (!captchaToken.value) {
-        error.value = 'Centang captcha terlebih dahulu.'
-        return
+        error.value = 'Centang captcha terlebih dahulu.';
+        return;
     }
 
+    loading.value = true;
 
     try {
-        await register(name.value.trim(), email.value.trim(), password.value, captchaToken.value);
+        await register(
+            name.value.trim(),
+            username.value.trim().toLowerCase(),
+            email.value.trim(),
+            phone.value.trim(),
+            password.value,
+            captchaToken.value,
+        );
         await router.push(user.value?.role === 'admin' ? '/admin/dashboard' : '/');
     } catch (err) {
-        resetCaptcha()
-        error.value = err.response?.data?.message || 'Registrasi gagal. Coba lagi.';
+        resetCaptcha();
+        error.value =
+            err.response?.data?.errors?.captcha ||
+            err.response?.data?.message ||
+            'Registrasi gagal. Coba lagi.';
     } finally {
         loading.value = false;
     }
@@ -117,6 +128,20 @@ async function handleRegister() {
                 </div>
 
                 <div class="flex flex-col gap-1.5">
+                    <label for="username" class="text-sm font-semibold">Username</label>
+                    <input
+                        id="username"
+                        v-model="username"
+                        type="text"
+                        autocomplete="username"
+                        minlength="3"
+                        maxlength="50"
+                        required
+                        class="w-full rounded-md border-[1.5px] border-[#cfd6d1] bg-white px-3.5 py-3 text-base focus-visible:border-[#12372a] focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-[#f2b705]"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-1.5">
                     <label for="email" class="text-sm font-semibold">Email</label>
                     <input
                         id="email"
@@ -125,6 +150,21 @@ async function handleRegister() {
                         autocomplete="email"
                         maxlength="100"
                         required
+                        class="w-full rounded-md border-[1.5px] border-[#cfd6d1] bg-white px-3.5 py-3 text-base focus-visible:border-[#12372a] focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-[#f2b705]"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="phone" class="text-sm font-semibold">Nomor Telepon</label>
+                    <input
+                        id="phone"
+                        v-model="phone"
+                        type="tel"
+                        autocomplete="tel"
+                        minlength="10"
+                        maxlength="20"
+                        required
+                        placeholder="Contoh: 081234567890"
                         class="w-full rounded-md border-[1.5px] border-[#cfd6d1] bg-white px-3.5 py-3 text-base focus-visible:border-[#12372a] focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-[#f2b705]"
                     />
                 </div>
@@ -146,7 +186,7 @@ async function handleRegister() {
 
                 <button
                     type="submit"
-                    :disabled="loading || !name.trim() || !email || password.length < 6"
+                    :disabled="loading || !name.trim() || username.trim().length < 3 || !email.trim() || phone.trim().length < 10 || password.length < 6"
                     class="mt-1 inline-flex items-center justify-center rounded-md bg-[#f2b705] px-4 py-3.5 text-lg font-extrabold text-[#12372a] transition-colors hover:bg-[#ffc61f] disabled:cursor-not-allowed disabled:bg-[#e4e8e5] disabled:text-[#8a968f]"
                 >
                     {{ loading ? 'Memproses…' : 'Daftar' }}

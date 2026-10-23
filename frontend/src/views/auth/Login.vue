@@ -7,7 +7,7 @@ const route = useRoute();
 const router = useRouter();
 const { login, user } = useAuth();
 
-const email = ref('');
+const identity = ref('');
 const password = ref('');
 const showPassword = ref(false);
 const error = ref('');
@@ -51,7 +51,7 @@ async function handleLogin() {
 
     loading.value = true;
     try {
-        await login(email.value.trim(), password.value, captchaToken.value);
+        await login(identity.value.trim(), password.value, captchaToken.value);
 
         const tujuan =
             user.value?.role === 'admin' ? '/admin/dashboard' : route.query.redirect || '/';
@@ -112,16 +112,16 @@ async function handleLogin() {
                     {{ error }}
                 </p>
 
-                <!-- Email -->
                 <div class="flex flex-col gap-1.5">
-                    <label for="email" class="text-sm font-semibold">Email</label>
+                    <label for="identity" class="text-sm font-semibold">
+                        Email, username, atau nomor HP
+                    </label>
                     <input
-                        id="email"
-                        v-model="email"
-                        type="email"
-                        inputmode="email"
-                        autocomplete="email"
-                        placeholder="nama@email.com"
+                        id="identity"
+                        v-model="identity"
+                        type="text"
+                        autocomplete="username"
+                        placeholder="Masukkan email, username, atau nomor HP"
                         required
                         class="w-full rounded-md border-[1.5px] border-[#cfd6d1] bg-white px-3.5 py-3 text-base placeholder:text-[#94a09a] hover:border-[#a9b5ae] focus-visible:border-[#12372a] focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-[#f2b705]"
                     />
@@ -155,7 +155,7 @@ async function handleLogin() {
                 <!-- Tombol -->
                 <button
                     type="submit"
-                    :disabled="loading || !email || !password"
+                    :disabled="loading || !identity.trim() || !password"
                     class="mt-1 inline-flex items-center justify-center gap-2.5 rounded-md bg-[#f2b705] px-4 py-3.5 text-lg font-extrabold text-[#12372a] transition-colors hover:bg-[#ffc61f] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#12372a] disabled:cursor-not-allowed disabled:bg-[#e4e8e5] disabled:text-[#8a968f]"
                 >
                     <span
