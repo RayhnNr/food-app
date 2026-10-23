@@ -181,11 +181,13 @@ func DeleteProduct(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Gagal menghapus",
 		})
+		return
 	}
 	if result.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Product tidak dapat ditemukan",
 		})
+		return
 	}
 	c.Status(http.StatusNoContent)
 }

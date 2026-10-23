@@ -70,6 +70,7 @@ func CreateCategory(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message" : "Gagal menyimpan data",
 		})
+		return
 	}
 
 	c.JSON(http.StatusCreated, category)
@@ -120,6 +121,7 @@ func UpdateCategory(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message" : "Gagal menyimpan data",
 		})
+		return
 	}
 
 	c.JSON(http.StatusCreated, category)
@@ -132,11 +134,13 @@ func DeleteCategory(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Gagal menghapus",
 		})
+		return
 	}
 	if result.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Category tidak dapat ditemukan",
 		})
+		return
 	}
 	c.Status(http.StatusNoContent)
 }
