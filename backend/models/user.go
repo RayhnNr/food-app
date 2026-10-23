@@ -8,14 +8,17 @@ import (
 	"gorm.io/gorm"
 )
 type User struct {
-	ID       uint   `json:"id" gorm:"primaryKey"`
-	Name     string `json:"name" gorm:"size:100;not null"`
-	Email    string `json:"email" gorm:"size:100;uniqueIndex;not null"`
-	Password string `json:"-" gorm:"not null"` // json:"-" = tidak pernah dikirim ke klien
-	Role     string `json:"role" gorm:"size:20;default:user"`
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	Name      string    `json:"name" gorm:"size:100;not null"`
+	Username  string    `json:"username" gorm:"size:50;uniqueIndex;not null"` // Tambahkan ini
+	Email     string    `json:"email" gorm:"size:100;uniqueIndex;not null"`
+	Phone     string    `json:"phone" gorm:"size:20;uniqueIndex;not null"`    // Tambahkan ini
+	Password  string    `json:"-" gorm:"not null"` // json:"-" = tidak pernah dikirim ke klien
+	Role      string    `json:"role" gorm:"size:20;default:user"`
 	CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
+
 
 func (User) TableName() string {
 	return "users"
