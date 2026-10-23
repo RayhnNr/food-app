@@ -66,7 +66,7 @@ func main() {
 		auth.GET("/category", handlers.GetCategory)
 		auth.POST("/category", handlers.CreateCategory)
 		auth.PUT("/category/:id", handlers.UpdateCategory)
-		auth.PUT("/category/:id", handlers.DeleteCategory)
+		auth.DELETE("/category/:id", handlers.DeleteCategory)
 
 		// Keranjang
 		auth.GET("/keranjangs", handlers.GetKeranjang)
