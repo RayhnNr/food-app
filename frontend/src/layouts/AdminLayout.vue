@@ -32,6 +32,7 @@ const menus = [
     { to: '/admin/foods', label: 'Kelola Menu', icon: 'fa-utensils' },
     { to: '/admin/category', label: 'Data Category', icon: 'fa-utensils' },
     { to: '/admin/pesanans', label: 'Pesanans', icon: 'fa-receipt' },
+    { to: '/admin/coa', label: 'CoA', icon: 'fa-receipt' },
 ];
 </script>
 

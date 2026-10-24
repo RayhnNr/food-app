@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@vueform/multiselect": "^2.6.11",
     "axios": "^1.20.0",
     "qrcode.vue": "^3.11.0",
     "tailwindcss": "^4.3.3",
