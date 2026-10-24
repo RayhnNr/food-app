@@ -81,6 +81,16 @@ func main() {
 		auth.GET("/pesanans", handlers.GetPesanans)
 		auth.POST("/pesanans", handlers.TambahPesanan)
 
+		// COA
+		auth.GET("/coa-types", handlers.GetCoaTypes)
+		auth.GET("/coa", handlers.GetCoa)
+		auth.GET("/coa/next-code", handlers.GetNextCoaCode)
+		auth.GET("/coa/tree", handlers.GetCoaTree)
+		auth.GET("/coa/:id", handlers.GetCoaBy)
+		auth.POST("/coa", handlers.CreateCoa)
+		auth.PUT("/coa/:id", handlers.UpdateCoa)
+		auth.DELETE("/coa/:id", handlers.DeleteCoa)
+
 		// Admin
 		admin := auth.Group("/admin")
 		{
