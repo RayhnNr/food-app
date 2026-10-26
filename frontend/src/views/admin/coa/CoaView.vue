@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import Multiselect from '@vueform/multiselect';
 import '@vueform/multiselect/themes/default.css';
 import api from '@/api';
@@ -14,16 +14,18 @@ const search = ref('');
 const showModal = ref(false);
 const saving = ref(false);
 const editingCoa = ref(null);
-const kodeManual = ref(false); // true kalau user sudah mengetik kode sendiri
+const kodeManual = ref(false);
+const kodeHint = ref('');
+const kodeInput = ref(null);
 const formError = ref('');
-const formErrors = ref({}); // error per field dari backend (422)
+const formErrors = ref({});
 
 const emptyForm = () => ({
     coa_no: '',
     coa_name: '',
     coa_type_id: '',
     coa_parent: '',
-    coa_head: false,
+    coa_head: true,
 });
 const form = ref(emptyForm());
 
@@ -40,7 +42,6 @@ const Toast = Swal.mixin({
 
 // ===== Data =====
 
-// Backend tidak punya fitur search, jadi difilter di sini
 const filteredCoas = computed(() => {
     const q = search.value.trim().toLowerCase();
     if (!q) return coas.value;
@@ -52,16 +53,15 @@ const filteredCoas = computed(() => {
     );
 });
 
-// Hanya akun header yang boleh jadi parent (akun yang sedang diedit tidak ikut)
-const parentOptions = computed(() =>
-    coas.value.filter((c) => c.coa_head && c.coa_id !== editingCoa.value?.coa_id),
-);
 const parentSelectOptions = computed(() =>
-    parentOptions.value.map((coa) => ({
-        value: coa.coa_id,
-        label: `${coa.coa_no} - ${coa.coa_name}`,
-    })),
+    coas.value
+        .filter((c) => c.coa_head && c.coa_id !== editingCoa.value?.coa_id)
+        .map((coa) => ({
+            value: coa.coa_id,
+            label: `${coa.coa_no} - ${coa.coa_name}`,
+        })),
 );
+
 const coaTypeSelectOptions = computed(() =>
     coaTypes.value.map((type) => ({
         value: type.coa_type_id,
@@ -69,12 +69,13 @@ const coaTypeSelectOptions = computed(() =>
     })),
 );
 
-// Level akun (untuk indentasi nama)
+const coaMap = computed(() => new Map(coas.value.map((c) => [c.coa_id, c])));
+
 const levelOf = (coa) => {
     let level = 0;
     let cur = coa;
     while (cur?.coa_parent && level < 10) {
-        cur = coas.value.find((c) => c.coa_id === cur.coa_parent);
+        cur = coaMap.value.get(cur.coa_parent);
         level++;
     }
     return level;
@@ -85,7 +86,7 @@ const getCoa = async () => {
     error.value = null;
 
     try {
-        const res = await api.get('/coa'); // sudah urut coa_no dari backend
+        const res = await api.get('/coa');
         coas.value = res.data.data;
     } catch (e) {
         error.value = 'Gagal mengambil data COA. Pastikan backend sudah jalan.';
@@ -104,33 +105,60 @@ const getCoaTypes = async () => {
     }
 };
 
-// ===== Kode otomatis (saran, tetap bisa diedit) =====
+// ===== Kode =====
+// Kode disarankan otomatis dan tetap dapat disesuaikan manual.
 
-const ambilKodeBaru = async () => {
-    if (editingCoa.value || kodeManual.value) return;
+let kodeRequestId = 0;
+
+const ambilKodeBaru = async ({ timpaKode = true } = {}) => {
+    if (editingCoa.value) return;
+
+    const requestId = ++kodeRequestId;
+    const params = { head: form.value.coa_head };
+    if (form.value.coa_parent) {
+        params.parent_id = form.value.coa_parent;
+    }
 
     try {
-        const params = form.value.coa_parent ? { parent_id: form.value.coa_parent } : {};
         const res = await api.get('/coa/next-code', { params });
-        form.value.coa_no = res.data.coa_no;
+        if (requestId !== kodeRequestId) return;
+
+        if (timpaKode || !kodeManual.value) form.value.coa_no = res.data.coa_no;
+        kodeHint.value = 'Kode berikutnya dibuat otomatis, tetap bisa diubah';
     } catch (e) {
-        // mis. kode parent tidak berformat 000.000.000 -> user isi manual
-        form.value.coa_no = '';
+        if (requestId !== kodeRequestId) return;
+
+        if (timpaKode || !kodeManual.value) form.value.coa_no = '';
+        kodeHint.value = e.response?.data?.message || '';
         console.error(e);
     }
 };
 
 watch(
     () => form.value.coa_parent,
-    (parentId) => {
+    async (parentId) => {
         if (editingCoa.value) return;
 
-        // tipe ikut parent kalau belum dipilih
         if (parentId && !form.value.coa_type_id) {
-            const p = coas.value.find((c) => c.coa_id === parentId);
+            const p = coaMap.value.get(parentId);
             if (p) form.value.coa_type_id = p.coa_type_id;
         }
-        ambilKodeBaru();
+
+        kodeManual.value = false;
+        await ambilKodeBaru();
+
+        if (parentId) {
+            await nextTick();
+            kodeInput.value?.focus();
+        }
+    },
+);
+
+watch(
+    () => form.value.coa_head,
+    () => {
+        if (editingCoa.value) return;
+        ambilKodeBaru({ timpaKode: false });
     },
 );
 
@@ -139,6 +167,7 @@ watch(
 const bukaModal = (coa = null) => {
     editingCoa.value = coa;
     kodeManual.value = false;
+    kodeHint.value = '';
     formError.value = '';
     formErrors.value = {};
 
@@ -217,7 +246,6 @@ const hapusCoa = async (coa) => {
         await getCoa();
         Toast.fire({ icon: 'success', title: 'Berhasil menghapus COA' });
     } catch (e) {
-        // mis. 409: akun masih punya anak
         Swal.fire({
             icon: 'error',
             title: 'Gagal menghapus',
@@ -356,7 +384,7 @@ onMounted(() => {
                     :options="parentSelectOptions"
                     value-prop="value"
                     label="label"
-                    placeholder="Tanpa parent (paling atas)"
+                    placeholder="Tanpa parent (level 1)"
                     :searchable="true"
                 />
                 <p v-if="formErrors.coa_parent" class="mt-1 text-sm text-red-600">
@@ -384,11 +412,22 @@ onMounted(() => {
             </div>
 
             <div>
+                <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <input v-model="form.coa_head" type="checkbox" class="h-4 w-4" />
+                    Akun header (pengelompok, tidak dipakai transaksi)
+                </label>
+                <p v-if="formErrors.coa_head" class="mt-1 text-sm text-red-600">
+                    {{ formErrors.coa_head }}
+                </p>
+            </div>
+
+            <div>
                 <label for="coa-no" class="mb-1 block text-sm font-medium text-slate-700">
                     Kode
                 </label>
                 <input
                     id="coa-no"
+                    ref="kodeInput"
                     v-model="form.coa_no"
                     @input="kodeManual = true"
                     type="text"
@@ -396,6 +435,12 @@ onMounted(() => {
                     class="w-full rounded-md border border-gray-300 px-3 py-2 font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     placeholder="100.000.000"
                 />
+                <p v-if="kodeHint && !editingCoa" class="mt-1 text-sm text-gray-500">
+                    {{ kodeHint }}
+                </p>
+                <p v-if="form.coa_parent && !form.coa_head" class="mt-1 text-sm text-gray-500">
+                    Akun detail diakhiri ,00 (contoh 100.000.001,00)
+                </p>
                 <p v-if="formErrors.coa_no" class="mt-1 text-sm text-red-600">
                     {{ formErrors.coa_no }}
                 </p>
@@ -415,16 +460,6 @@ onMounted(() => {
                 />
                 <p v-if="formErrors.coa_name" class="mt-1 text-sm text-red-600">
                     {{ formErrors.coa_name }}
-                </p>
-            </div>
-
-            <div>
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input v-model="form.coa_head" type="checkbox" class="h-4 w-4" />
-                    Akun header (pengelompok, tidak dipakai transaksi)
-                </label>
-                <p v-if="formErrors.coa_head" class="mt-1 text-sm text-red-600">
-                    {{ formErrors.coa_head }}
                 </p>
             </div>
 
