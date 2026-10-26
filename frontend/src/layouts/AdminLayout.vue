@@ -49,16 +49,16 @@ const menus = [
 
         <!-- Sidebar (gaya Flowbite) -->
         <aside
-            class="fixed inset-y-0 left-0 z-40 w-64 transform transition-transform lg:static lg:translate-x-0"
+            class="fixed inset-y-0 left-0 z-40 w-64 h-screen transform transition-transform lg:translate-x-0"
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             aria-label="Sidebar"
         >
             <div
-                class="flex h-full flex-col px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800 lg:rounded-r"
+                class="flex h-full flex-col overflow-y-auto bg-gray-50 px-3 py-4 dark:bg-gray-800 lg:rounded-r"
             >
                 <!-- Brand -->
                 <div
-                    class="flex items-center p-2 mb-4 text-lg font-bold text-gray-900 dark:text-white"
+                    class="mb-4 flex shrink-0 items-center p-2 text-lg font-bold text-gray-900 dark:text-white"
                 >
                     <i class="fa-solid fa-utensils w-6 text-center text-emerald-600"></i>
                     <span class="ml-3">Admin Panel</span>
@@ -69,7 +69,7 @@ const menus = [
                     <li v-for="m in menus" :key="m.to">
                         <RouterLink
                             :to="m.to"
-                            class="group flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                            class="group flex items-center rounded-lg p-2 text-base font-normal text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                             active-class="!bg-gray-200 dark:!bg-gray-700"
                             @click="sidebarOpen = false"
                         >
@@ -80,22 +80,23 @@ const menus = [
                                     m.icon,
                                 ]"
                             ></i>
-                            <span class="flex-1 ml-3 whitespace-nowrap">{{ m.label }}</span>
+                            <span class="ml-3 flex-1 whitespace-nowrap">{{ m.label }}</span>
                         </RouterLink>
                     </li>
                 </ul>
 
                 <!-- Bawah -->
-                <ul class="pt-4 mt-auto space-y-2 border-t border-gray-200 dark:border-gray-700">
+                <ul class="mt-auto space-y-2 border-t border-gray-200 pt-4 dark:border-gray-700">
                     <li>
                         <RouterLink
                             to="/"
-                            class="group flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                            class="group flex items-center rounded-lg p-2 text-base font-normal text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                            @click="sidebarOpen = false"
                         >
                             <i
-                                class="fa-solid fa-arrow-left w-6 text-center text-lg text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                class="fa-solid fa-arrow-left w-6 text-center text-lg text-gray-500 dark:text-gray-400"
                             ></i>
-                            <span class="flex-1 ml-3 whitespace-nowrap">Kembali ke Situs</span>
+                            <span class="ml-3 flex-1 whitespace-nowrap">Kembali ke Situs</span>
                         </RouterLink>
                     </li>
                 </ul>
@@ -103,7 +104,7 @@ const menus = [
         </aside>
 
         <!-- Konten -->
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0 flex-1 lg:ml-64">
             <!-- Navbar atas -->
             <header
                 class="sticky top-0 z-20 h-16 bg-white shadow-sm flex items-center justify-between px-4"
