@@ -18,6 +18,7 @@ import RegisterView from '@/views/auth/Register.vue';
 import CategoryView from '@/views/admin/category/CategoryView.vue';
 import CoaView from '@/views/admin/coa/CoaView.vue';
 import CoaJournalView from '@/views/admin/coa_journal/CoaJournalView.vue';
+import CoaType from '@/views/admin/coa_type/CoaType.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -52,6 +53,7 @@ const router = createRouter({
                 { path: 'foods/:id/edit', component: FoodFormView },
                 { path: 'category', component: CategoryView },
                 { path: 'coa', component: CoaView },
+                { path: 'coa-types', component: CoaType },
                 { path: 'coa-journal', component: CoaJournalView },
                 { path: 'pesanans', component: PesananFoodsView },
                 { path: 'pesanans/:id/edit', component: PesananEditView },
