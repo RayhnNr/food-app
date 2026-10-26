@@ -28,6 +28,8 @@ func main() {
 		&models.User{}, 
 		&models.CoaType{}, 
 		&models.Coa{},
+		&models.CoaJournalType{},
+		&models.CoaJournal{},
 	)
 
 	r := gin.Default()
@@ -90,6 +92,10 @@ func main() {
 		auth.POST("/coa", handlers.CreateCoa)
 		auth.PUT("/coa/:id", handlers.UpdateCoa)
 		auth.DELETE("/coa/:id", handlers.DeleteCoa)
+
+		// CoA Journal
+		auth.GET("/coa-journal", handlers.GetCoaJurnal)
+		auth.PUT("/coa-journal", handlers.SaveCoaJournal)
 
 		// Admin
 		admin := auth.Group("/admin")
