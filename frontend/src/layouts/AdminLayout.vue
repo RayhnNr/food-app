@@ -33,6 +33,7 @@ const menus = [
     { to: '/admin/category', label: 'Data Category', icon: 'fa-utensils' },
     { to: '/admin/pesanans', label: 'Pesanans', icon: 'fa-receipt' },
     { to: '/admin/coa', label: 'CoA', icon: 'fa-receipt' },
+    { to: '/admin/coa-journal', label: 'CoA Journal', icon: 'fa-receipt' },
 ];
 </script>
 
