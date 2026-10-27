@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import api from '@/api';
+import Select2Field from '@/components/Select2Field.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -34,6 +35,11 @@ const formatRupiah = (angka) =>
         currency: 'IDR',
         minimumFractionDigits: 0,
     }).format(angka);
+
+const statusOptions = [
+    { id: 'diproses', text: 'Diproses' },
+    { id: 'selesai', text: 'Selesai' },
+];
 
 const muatPesanan = async () => {
     loading.value = true;
@@ -189,14 +195,12 @@ onMounted(muatPesanan);
 
             <div>
                 <label for="status" class="block text-sm font-medium mb-1">Status</label>
-                <select
+                <Select2Field
                     id="status"
                     v-model="form.status"
-                    class="w-full px-4 py-2 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-4 focus:ring-emerald-300"
-                >
-                    <option value="diproses">Diproses</option>
-                    <option value="selesai">Selesai</option>
-                </select>
+                    :options="statusOptions"
+                    placeholder="Pilih status"
+                />
             </div>
 
             <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">

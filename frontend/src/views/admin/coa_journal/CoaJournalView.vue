@@ -1,9 +1,9 @@
 ```vue
 <script setup>
 import { ref, onMounted } from 'vue';
-import Select2 from 'vue3-select2-component';
 import Swal from 'sweetalert2';
 import api from '@/api';
+import Select2Field from '@/components/Select2Field.vue';
 
 const items = ref([]);
 const coaOptions = ref([]);
@@ -161,15 +161,12 @@ onMounted(loadPageData);
 
                         <!-- Dropdown -->
                         <div class="min-w-0">
-                            <Select2
-                                class="coa-journal-select2"
+                            <Select2Field
                                 v-model="item.coa_id"
                                 :options="coaOptions"
                                 placeholder="Cari atau pilih akun COA..."
                                 :settings="{
-                                    width: '100%',
                                     allowClear: true,
-                                    dropdownCssClass: 'coa-journal-select2-dropdown',
                                 }"
                                 :disabled="submitting"
                             />
@@ -197,115 +194,3 @@ onMounted(loadPageData);
         </div>
     </div>
 </template>
-
-<style>
-.coa-journal-select2 {
-    width: 100%;
-}
-
-.coa-journal-select2 .select2-container {
-    width: 100% !important;
-}
-
-.coa-journal-select2 .select2-container--default .select2-selection--single {
-    position: relative;
-    height: 42px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    background: #fff;
-    transition:
-        border-color 150ms ease,
-        box-shadow 150ms ease;
-}
-
-.coa-journal-select2 .select2-container--default .select2-selection--single:hover {
-    border-color: #94a3b8;
-}
-
-.coa-journal-select2 .select2-container--focus .select2-selection--single,
-.coa-journal-select2 .select2-container--open .select2-selection--single {
-    border-color: #059669;
-    box-shadow: 0 0 0 3px rgb(5 150 105 / 12%);
-    outline: none;
-}
-
-.coa-journal-select2
-    .select2-container--default
-    .select2-selection--single
-    .select2-selection__rendered {
-    padding-left: 12px;
-    padding-right: 34px;
-    color: #334155;
-    font-size: 14px;
-    line-height: 40px;
-}
-
-.coa-journal-select2
-    .select2-container--default
-    .select2-selection--single
-    .select2-selection__placeholder {
-    color: #94a3b8;
-}
-
-.coa-journal-select2
-    .select2-container--default
-    .select2-selection--single
-    .select2-selection__arrow {
-    top: 1px;
-    right: 6px;
-    height: 40px;
-}
-
-.coa-journal-select2
-    .select2-container--default
-    .select2-selection--single
-    .select2-selection__clear {
-    position: absolute;
-    top: 50%;
-    right: 28px;
-    z-index: 1;
-    margin: 0;
-    color: #64748b;
-    transform: translateY(-50%);
-}
-
-.coa-journal-select2
-    .select2-container--default
-    .select2-selection--single
-    .select2-selection__arrow {
-    right: 2px;
-}
-
-.coa-journal-select2 .select2-container--disabled .select2-selection--single {
-    background: #f1f5f9;
-    cursor: not-allowed;
-}
-
-.coa-journal-select2-dropdown {
-    overflow: hidden;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 6px;
-    box-shadow: 0 8px 20px rgb(15 23 42 / 10%);
-}
-
-.coa-journal-select2-dropdown .select2-search__field {
-    border-color: #cbd5e1 !important;
-    border-radius: 4px;
-    outline: none;
-}
-
-.coa-journal-select2-dropdown .select2-search__field:focus {
-    border-color: #059669 !important;
-    box-shadow: 0 0 0 2px rgb(5 150 105 / 12%);
-}
-
-.coa-journal-select2-dropdown .select2-results__option[aria-selected='true'] {
-    background: #ecfdf5;
-    color: #047857;
-}
-
-.coa-journal-select2-dropdown .select2-results__option--highlighted[aria-selected] {
-    background: #059669;
-    color: #fff;
-}
-</style>

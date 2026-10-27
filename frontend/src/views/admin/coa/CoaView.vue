@@ -1,10 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import Multiselect from '@vueform/multiselect';
-import '@vueform/multiselect/themes/default.css';
 import api from '@/api';
 import Swal from 'sweetalert2';
 import Modal from '@/components/Modal.vue';
+import Select2Field from '@/components/Select2Field.vue';
 
 const coas = ref([]);
 const coaTypes = ref([]);
@@ -54,28 +53,34 @@ const filteredCoas = computed(() => {
 });
 
 const parentSelectOptions = computed(() =>
-    coas.value
-        .filter((c) => c.coa_head && c.coa_id !== editingCoa.value?.coa_id)
-        .map((coa) => ({
-            value: coa.coa_id,
-            label: `${coa.coa_no} - ${coa.coa_name}`,
-        })),
+    [
+        { id: '', text: '' },
+        ...coas.value
+            .filter((c) => c.coa_head && c.coa_id !== editingCoa.value?.coa_id)
+            .map((coa) => ({
+                id: String(coa.coa_id),
+                text: `${coa.coa_no} - ${coa.coa_name}`,
+            })),
+    ],
 );
 
 const coaTypeSelectOptions = computed(() =>
-    coaTypes.value.map((type) => ({
-        value: type.coa_type_id,
-        label: type.coa_type_name,
-    })),
+    [
+        { id: '', text: '' },
+        ...coaTypes.value.map((type) => ({
+            id: String(type.coa_type_id),
+            text: type.coa_type_name,
+        })),
+    ],
 );
 
-const coaMap = computed(() => new Map(coas.value.map((c) => [c.coa_id, c])));
+const coaMap = computed(() => new Map(coas.value.map((c) => [String(c.coa_id), c])));
 
 const levelOf = (coa) => {
     let level = 0;
     let cur = coa;
     while (cur?.coa_parent && level < 10) {
-        cur = coaMap.value.get(cur.coa_parent);
+        cur = coaMap.value.get(String(cur.coa_parent));
         level++;
     }
     return level;
@@ -140,7 +145,7 @@ watch(
         if (editingCoa.value) return;
 
         if (parentId && !form.value.coa_type_id) {
-            const p = coaMap.value.get(parentId);
+            const p = coaMap.value.get(String(parentId));
             if (p) form.value.coa_type_id = p.coa_type_id;
         }
 
@@ -378,14 +383,12 @@ onMounted(() => {
                 <label for="coa-parent" class="mb-1 block text-sm font-medium text-slate-700">
                     Parent (opsional)
                 </label>
-                <Multiselect
+                <Select2Field
                     id="coa-parent"
                     v-model="form.coa_parent"
                     :options="parentSelectOptions"
-                    value-prop="value"
-                    label="label"
                     placeholder="Tanpa parent (level 1)"
-                    :searchable="true"
+                    :settings="{ allowClear: true }"
                 />
                 <p v-if="formErrors.coa_parent" class="mt-1 text-sm text-red-600">
                     {{ formErrors.coa_parent }}
@@ -396,15 +399,11 @@ onMounted(() => {
                 <label for="coa-type" class="mb-1 block text-sm font-medium text-slate-700">
                     Tipe
                 </label>
-                <Multiselect
+                <Select2Field
                     id="coa-type"
                     v-model="form.coa_type_id"
                     :options="coaTypeSelectOptions"
-                    value-prop="value"
-                    label="label"
                     placeholder="Pilih tipe"
-                    :searchable="true"
-                    :can-clear="false"
                 />
                 <p v-if="formErrors.coa_type_id" class="mt-1 text-sm text-red-600">
                     {{ formErrors.coa_type_id }}
