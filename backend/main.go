@@ -30,6 +30,9 @@ func main() {
 		&models.Coa{},
 		&models.CoaJournalType{},
 		&models.CoaJournal{},
+		&models.CoaGoods{},
+		&models.GoodsPartai{},
+		&models.GoodsCoaPartai{},
 	)
 
 	r := gin.Default()
@@ -96,6 +99,14 @@ func main() {
 		// CoA Journal
 		auth.GET("/coa-journal", handlers.GetCoaJurnal)
 		auth.PUT("/coa-journal", handlers.SaveCoaJournal)
+
+		// Goods Partai
+		auth.GET("/coa-goods", handlers.GetCoaGoods)
+		auth.GET("/goods-partai", handlers.GetGoodsPartai)
+		auth.GET("/goods-partai/:id", handlers.GetGoodsPartaiBy)
+		auth.POST("/goods-partai", handlers.CreateGoodsPartai)
+		auth.PUT("/goods-partai/:id", handlers.UpdateGoodsPartai)
+		auth.DELETE("/goods-partai/:id", handlers.DeleteGoodsPartai)
 
 		// Admin
 		admin := auth.Group("/admin")
