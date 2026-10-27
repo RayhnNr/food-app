@@ -19,6 +19,8 @@ import CategoryView from '@/views/admin/category/CategoryView.vue';
 import CoaView from '@/views/admin/coa/CoaView.vue';
 import CoaJournalView from '@/views/admin/coa_journal/CoaJournalView.vue';
 import CoaType from '@/views/admin/coa_type/CoaType.vue';
+import GoodsPartai from '@/views/admin/goods_partai/GoodsPartai.vue';
+import FormGoodsPartai from '@/views/admin/goods_partai/FormGoodsPartai.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -55,6 +57,9 @@ const router = createRouter({
                 { path: 'coa', component: CoaView },
                 { path: 'coa-types', component: CoaType },
                 { path: 'coa-journal', component: CoaJournalView },
+                { path: 'goods-partai', component: GoodsPartai },
+                { path: 'goods-partai/tambah', component: FormGoodsPartai },
+                { path: 'goods-partai/:id/edit', component: FormGoodsPartai },
                 { path: 'pesanans', component: PesananFoodsView },
                 { path: 'pesanans/:id/edit', component: PesananEditView },
             ],
