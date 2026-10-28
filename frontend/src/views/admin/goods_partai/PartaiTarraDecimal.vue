@@ -130,18 +130,6 @@ watch(() => route.params.id, loadAll);
                 >
                     <div class="border-b border-slate-200 px-5 py-4 md:px-6">
                         <div class="flex items-center gap-3">
-                            <span
-                                class="flex h-10 w-10 items-center justify-center rounded-md bg-emerald-50 text-emerald-700"
-                            >
-                                <i
-                                    :class="
-                                        panel.key === 'tarra'
-                                            ? 'fa-solid fa-scale-balanced'
-                                            : 'fa-solid fa-calculator'
-                                    "
-                                    aria-hidden="true"
-                                ></i>
-                            </span>
                             <div>
                                 <h2 class="font-semibold text-slate-800">{{ panel.formTitle }}</h2>
                                 <p class="mt-0.5 text-sm text-slate-500">
