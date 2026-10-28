@@ -35,6 +35,7 @@ func main() {
 		&models.GoodsCoaPartai{},
 		&models.GoodsPartaiDecimal{},
 		&models.GoodsPartaiTarra{},
+		&models.BarcodeItem{},
 	)
 
 	r := gin.Default()
@@ -117,6 +118,15 @@ func main() {
 		auth.GET("/goods-partai/:id/decimal", handlers.GetGoodsPartaiDecimal)
 		auth.POST("/goods-partai/:id/decimal", handlers.CreateGoodsPartaiDecimal)
 		auth.DELETE("/goods-partai/:id/decimal/:decimal_id", handlers.DeleteGoodsPartaiDecimal)
+
+		// Barcode
+		auth.GET("/barcode", handlers.GetBarcode)
+		auth.GET("/barcode/next-serial", handlers.GetBarcodeNextSerial)
+		auth.POST("/barcode/internal", handlers.GenerateBarcodeInternal)
+		auth.POST("/barcode/external", handlers.GenerateBarcodeExternal)
+		auth.GET("/barcode/:item_id", handlers.GetBarcodeDetail)
+		auth.GET("/barcode/:item_id/print", handlers.GetBarcodePrint)
+		auth.DELETE("/barcode/:item_id", handlers.DeleteBarcode)
 
 		// Admin
 		admin := auth.Group("/admin")
