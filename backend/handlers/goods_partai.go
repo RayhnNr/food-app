@@ -55,6 +55,18 @@ type GoodsPartaiDetail struct {
 	Coas []GoodsPartaiCoaRow `json:"coas"`
 }
 
+// Struct Terra
+type GoodsPartaiTarraInput struct {
+    BeratMin *float64 `json:"goods_partai_tarra_berat_min"`
+    BeratMax *float64 `json:"goods_partai_tarra_berat_max"`
+    Nominal  *float64 `json:"goods_partai_tarra_nominal"`
+}
+
+type GoodsPartaiDecimalInput struct {
+	DecimalMin   *float64 `json:"goods_partai_decimal_min"`
+	DecimalMax   *float64 `json:"goods_partai_decimal_max"`
+	BrutoNominal *float64 `json:"goods_partai_bruto_nominal"`
+}
 
 func activeToInt(active bool) int {
 	if active {
@@ -499,5 +511,315 @@ func DeleteGoodsPartai(c *gin.Context) {
 		return
 	}
  
+	c.Status(http.StatusNoContent)
+}
+
+func validasiGoodsPartaiTarra(in *GoodsPartaiTarraInput, partaiID uint) map[string]string {
+	errs := map[string]string{}
+ 
+	if in.BeratMin == nil {
+		errs["goods_partai_tarra_berat_min"] = "Berat min wajib diisi"
+	} else if *in.BeratMin < 0 {
+		errs["goods_partai_tarra_berat_min"] = "Berat min tidak boleh negatif"
+	}
+ 
+	if in.BeratMax == nil {
+		errs["goods_partai_tarra_berat_max"] = "Berat max wajib diisi"
+	} else if *in.BeratMax < 0 {
+		errs["goods_partai_tarra_berat_max"] = "Berat max tidak boleh negatif"
+	}
+ 
+	if in.Nominal == nil {
+		errs["goods_partai_tarra_nominal"] = "Nominal wajib diisi"
+	} else if *in.Nominal < 0 {
+		errs["goods_partai_tarra_nominal"] = "Nominal tidak boleh negatif"
+	}
+ 
+	if len(errs) > 0 {
+		return errs
+	}
+ 
+	if *in.BeratMin > *in.BeratMax {
+		errs["goods_partai_tarra_berat_max"] = "Berat max tidak boleh lebih kecil dari berat min"
+		return errs
+	}
+ 
+	var n int64
+	database.DB.Model(&models.GoodsPartaiTarra{}).
+		Where("goods_partai_id = ? AND goods_partai_tarra_berat_min <= ? AND goods_partai_tarra_berat_max >= ?",
+			partaiID, *in.BeratMax, *in.BeratMin).
+		Count(&n)
+	if n > 0 {
+		errs["goods_partai_tarra_berat_min"] = "Rentang bertabrakan dengan data yang sudah ada"
+	}
+ 
+	return errs
+}
+ 
+func validasiGoodsPartaiDecimal(in *GoodsPartaiDecimalInput, partaiID uint) map[string]string {
+	errs := map[string]string{}
+ 
+	if in.DecimalMin == nil {
+		errs["goods_partai_decimal_min"] = "Desimal min wajib diisi"
+	} else if *in.DecimalMin < 0 {
+		errs["goods_partai_decimal_min"] = "Desimal min tidak boleh negatif"
+	}
+ 
+	if in.DecimalMax == nil {
+		errs["goods_partai_decimal_max"] = "Desimal max wajib diisi"
+	} else if *in.DecimalMax < 0 {
+		errs["goods_partai_decimal_max"] = "Desimal max tidak boleh negatif"
+	}
+ 
+	if in.BrutoNominal == nil {
+		errs["goods_partai_bruto_nominal"] = "Nominal potongan wajib diisi"
+	}
+ 
+	if len(errs) > 0 {
+		return errs
+	}
+ 
+	if *in.DecimalMin > *in.DecimalMax {
+		errs["goods_partai_decimal_max"] = "Desimal max tidak boleh lebih kecil dari desimal min"
+		return errs
+	}
+ 
+	var n int64
+	database.DB.Model(&models.GoodsPartaiDecimal{}).
+		Where("goods_partai_id = ? AND goods_partai_decimal_min <= ? AND goods_partai_decimal_max >= ?",
+			partaiID, *in.DecimalMax, *in.DecimalMin).
+		Count(&n)
+	if n > 0 {
+		errs["goods_partai_decimal_min"] = "Rentang bertabrakan dengan data yang sudah ada"
+	}
+ 
+	return errs
+}
+
+func GetGoodsPartaiTarra(c *gin.Context) {
+	userID, ok := middlewares.GetUserIDFromCOntext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message" : "User tidak dikenali",
+		})
+		return
+	}
+
+	partai, found := findGoodsPartai(c, userID)
+	if !found {
+		return
+	}
+
+	list := []models.GoodsPartaiTarra{}
+	if err := database.DB.Where("goods_partai_id = ?", partai.ID).Order("goods_partai_tarra_berat_min ASC, goods_partai_tarra_id ASC").Find(&list).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message" : "Gagal ambil data terra",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data" : list,
+	})
+}
+
+func GetGoodsPartaiDecimal(c *gin.Context) {
+	userID, ok := middlewares.GetUserIDFromCOntext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message" : "User tidak dikenali",
+		})
+		return
+	}
+
+	partai, found := findGoodsPartai(c, userID)
+	if !found {
+		return
+	}
+
+	list := []models.GoodsPartaiDecimal{}
+	if err := database.DB.Where("goods_partai_id = ?", partai.ID).Order("goods_partai_decimal_min ASC, goods_partai_decimal_id ASC").Find(&list).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message" : "Gagal ambil data decimal",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data" : list,
+	})
+}
+
+func CreateGoodsPartaiTarra(c *gin.Context) {
+	userID, ok := middlewares.GetUserIDFromCOntext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "User tidak dikenali",
+		})
+		return
+	}
+ 
+	partai, found := findGoodsPartai(c, userID)
+	if !found {
+		return
+	}
+
+	var in GoodsPartaiTarraInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message" : "JSON tidak valid",
+		})
+		return
+	}
+
+	if errs := validasiGoodsPartaiTarra(&in, partai.ID); len(errs) > 0 {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"errors" : errs,
+		})
+		return
+	}
+
+	row := models.GoodsPartaiTarra{
+		IDGoodsPartai: partai.ID,
+		BeratMin: *in.BeratMin,
+		BeratMax: *in.BeratMax,
+		Nominal: *in.Nominal,
+	}
+
+	if err := database.DB.Create(&row).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message" : "Gagal menyimpan data",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, row)
+}
+
+func CreateGoodsPartaiDecimal(c *gin.Context) {
+	userID, ok := middlewares.GetUserIDFromCOntext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "User tidak dikenali",
+		})
+		return
+	}
+ 
+	partai, found := findGoodsPartai(c, userID)
+	if !found {
+		return
+	}
+
+	var in GoodsPartaiDecimalInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message" : "JSON tidak valid",
+		})
+		return
+	}
+
+	if errs := validasiGoodsPartaiDecimal(&in, partai.ID); len(errs) > 0 {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"errors" : errs,
+		})
+		return
+	}
+
+	row := models.GoodsPartaiDecimal{
+		IDGoodsPartai: partai.ID,
+		DecimalMin: *in.DecimalMin,
+		DecimalMax: *in.DecimalMax,
+		BrutoNominal: *in.BrutoNominal,
+	}
+
+	if err := database.DB.Create(&row).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message" : "Gagal menyimpan data",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, row)
+}
+
+func DeleteGoodsPartaiTarra(c *gin.Context) {
+	userID, ok := middlewares.GetUserIDFromCOntext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "User tidak dikenali",
+		})
+		return
+	}
+
+	partai, found := findGoodsPartai(c, userID)
+	if !found {
+		return
+	}
+
+	tarraID, err := strconv.ParseUint(c.Param("tarra_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Data tarra tidak ditemukan",
+		})
+		return
+	}
+
+	result := database.DB.
+		Where("goods_partai_tarra_id = ? AND goods_partai_id = ?", tarraID, partai.ID).
+		Delete(&models.GoodsPartaiTarra{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Gagal menghapus data tarra",
+		})
+		return
+	}
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Data tarra tidak ditemukan",
+		})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func DeleteGoodsPartaiDecimal(c *gin.Context) {
+	userID, ok := middlewares.GetUserIDFromCOntext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "User tidak dikenali",
+		})
+		return
+	}
+
+	partai, found := findGoodsPartai(c, userID)
+	if !found {
+		return
+	}
+
+	decimalID, err := strconv.ParseUint(c.Param("decimal_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Data tarra tidak ditemukan",
+		})
+		return
+	}
+
+	result := database.DB.
+		Where("goods_partai_decimal_id = ? AND goods_partai_id = ?", decimalID, partai.ID).
+		Delete(&models.GoodsPartaiDecimal{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Gagal menghapus data decimal",
+		})
+		return
+	}
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Data decimal tidak ditemukan",
+		})
+		return
+	}
+
 	c.Status(http.StatusNoContent)
 }
