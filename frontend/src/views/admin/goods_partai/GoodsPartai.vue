@@ -122,7 +122,9 @@ onBeforeUnmount(() => {
                             {{ index + 1 }}
                         </td>
                         <!-- <td>{{ String(goods.goods_partai_code).padStart(3, '0') }}</td> -->
-                        <td class="py-3 px-6 text-left">{{ String(goods.goods_partai_code).padStart(3, '0') }}</td>
+                        <td class="py-3 px-6 text-left">
+                            {{ String(goods.goods_partai_code).padStart(3, '0') }}
+                        </td>
                         <td class="py-3 px-6 text-left">{{ goods.goods_partai_name }}</td>
                         <td class="py-3 px-6 text-left">{{ goods.goods_partai_year }}</td>
                         <td class="py-3 px-6 text-left">{{ goods.goods_partai_bungkus }}</td>
@@ -148,6 +150,14 @@ onBeforeUnmount(() => {
                                     aria-label="Ubah partai"
                                 >
                                     <i class="fa-solid fa-pencil"></i>
+                                </RouterLink>
+                                <RouterLink
+                                    :to="`/admin/goods-partai/${goods.goods_partai_id}/tarra-decimal`"
+                                    :class="[actionButtonClass, 'border-amber-200 bg-amber-100']"
+                                    title="Tarra & Desimal"
+                                    aria-label="Tarra dan desimal"
+                                >
+                                    <i class="fa-solid fa-scale-balanced"></i>
                                 </RouterLink>
                                 <button
                                     type="button"

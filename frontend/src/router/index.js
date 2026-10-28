@@ -21,6 +21,7 @@ import CoaJournalView from '@/views/admin/coa_journal/CoaJournalView.vue';
 import CoaType from '@/views/admin/coa_type/CoaType.vue';
 import GoodsPartai from '@/views/admin/goods_partai/GoodsPartai.vue';
 import FormGoodsPartai from '@/views/admin/goods_partai/FormGoodsPartai.vue';
+import PartaiTarraDecimal from '@/views/admin/goods_partai/PartaiTarraDecimal.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -60,6 +61,7 @@ const router = createRouter({
                 { path: 'goods-partai', component: GoodsPartai },
                 { path: 'goods-partai/tambah', component: FormGoodsPartai },
                 { path: 'goods-partai/:id/edit', component: FormGoodsPartai },
+                { path: 'goods-partai/:id/tarra-decimal', component: PartaiTarraDecimal, meta: { requiresAuth: true } },
                 { path: 'pesanans', component: PesananFoodsView },
                 { path: 'pesanans/:id/edit', component: PesananEditView },
             ],

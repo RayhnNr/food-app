@@ -33,6 +33,8 @@ func main() {
 		&models.CoaGoods{},
 		&models.GoodsPartai{},
 		&models.GoodsCoaPartai{},
+		&models.GoodsPartaiDecimal{},
+		&models.GoodsPartaiTarra{},
 	)
 
 	r := gin.Default()
@@ -107,6 +109,14 @@ func main() {
 		auth.POST("/goods-partai", handlers.CreateGoodsPartai)
 		auth.PUT("/goods-partai/:id", handlers.UpdateGoodsPartai)
 		auth.DELETE("/goods-partai/:id", handlers.DeleteGoodsPartai)
+
+		auth.GET("/goods-partai/:id/tarra", handlers.GetGoodsPartaiTarra)
+		auth.POST("/goods-partai/:id/tarra", handlers.CreateGoodsPartaiTarra)
+		auth.DELETE("/goods-partai/:id/tarra/:tarra_id", handlers.DeleteGoodsPartaiTarra)
+
+		auth.GET("/goods-partai/:id/decimal", handlers.GetGoodsPartaiDecimal)
+		auth.POST("/goods-partai/:id/decimal", handlers.CreateGoodsPartaiDecimal)
+		auth.DELETE("/goods-partai/:id/decimal/:decimal_id", handlers.DeleteGoodsPartaiDecimal)
 
 		// Admin
 		admin := auth.Group("/admin")

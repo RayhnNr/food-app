@@ -35,7 +35,7 @@ const menus = [
     { to: '/admin/coa', label: 'CoA', icon: 'fa-receipt' },
     { to: '/admin/coa-types', label: 'CoA Type', icon: 'fa-receipt' },
     { to: '/admin/coa-journal', label: 'CoA Journal', icon: 'fa-receipt' },
-    { to: '/admin/goods-partai', label: 'Goods Partai', icon: 'fa-receipt' },
+    { to: '/admin/goods-partai', label: 'Data Partai', icon: 'fa-receipt' },
 ];
 </script>
 
