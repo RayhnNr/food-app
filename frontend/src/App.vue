@@ -25,7 +25,8 @@ watch(
 
 <template>
     <div class="min-h-screen bg-slate-100">
-        <Navbar v-if="!isAdmin" :cart-count="cartCount" />
+        <Navbar v-if="!isAdmin && !route.meta.tanpaNavbar" :cart-count="cartCount" />
+        
         <RouterView />
     </div>
 </template>

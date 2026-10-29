@@ -22,6 +22,10 @@ import CoaType from '@/views/admin/coa_type/CoaType.vue';
 import GoodsPartai from '@/views/admin/goods_partai/GoodsPartai.vue';
 import FormGoodsPartai from '@/views/admin/goods_partai/FormGoodsPartai.vue';
 import PartaiTarraDecimal from '@/views/admin/goods_partai/PartaiTarraDecimal.vue';
+import BarcodeView from '@/views/admin/barcode/BarcodeView.vue';
+import FormBarcodeInternal from '@/views/admin/barcode/FormBarcodeInternal.vue';
+import FormBarcodeExternal from '@/views/admin/barcode/FormBarcodeExternal.vue';
+import BarcodePrintView from '@/views/admin/barcode/BarcodePrintView.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -62,9 +66,18 @@ const router = createRouter({
                 { path: 'goods-partai/tambah', component: FormGoodsPartai },
                 { path: 'goods-partai/:id/edit', component: FormGoodsPartai },
                 { path: 'goods-partai/:id/tarra-decimal', component: PartaiTarraDecimal, meta: { requiresAuth: true } },
+                { path: 'barcode', component: BarcodeView },
+                { path: 'barcode/internal', component: FormBarcodeInternal },
+                { path: 'barcode/external', component: FormBarcodeExternal },
+                // { path: 'barcode/:id/print', component: BarcodePrintView },
                 { path: 'pesanans', component: PesananFoodsView },
                 { path: 'pesanans/:id/edit', component: PesananEditView },
             ],
+        },
+        {
+            path: '/cetak/barcode/:id',
+            component: BarcodePrintView,
+            meta: { requiresAuth: true, requiresAdmin: true, tanpaNavbar: true },
         },
     ],
 });
