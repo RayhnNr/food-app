@@ -68,6 +68,7 @@ type BarcodePrintRow struct {
 	YearCode        string `json:"year_code"`
 	CompanyCode     string `json:"company_code"`
 	Serial          string `json:"serial"`
+	GoodsPartaiID int64 `json:"goods_partai_id"`
 }
 
 type barcodeResult struct {
@@ -621,6 +622,7 @@ func GetBarcodePrint(c *gin.Context) {
 	q := database.DB.Table("barcode_item AS i").
 		Select(`i.item_code AS item_code,
 			i.item_type AS item_type,
+			COALESCE(i.goods_partai_id, 0) AS goods_partai_id,
 			COALESCE(p.goods_partai_name, '') AS goods_partai_name`).
 		Joins("LEFT JOIN goods_partai AS p ON p.goods_partai_id = i.goods_partai_id").
 		Where("i.item_id = ? AND i.user_id = ?", itemID, userID)
