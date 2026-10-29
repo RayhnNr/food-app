@@ -212,6 +212,8 @@ onMounted(async () => {
 <style scoped>
 .cetak {
     font-family: Tahoma, sans-serif;
+    /* Margin bawaan body browser (8px) yang ada di halaman PHP, tapi dihapus oleh reset Tailwind. */
+    margin: 8px;
 }
 
 .garis-putih,
@@ -298,6 +300,13 @@ onMounted(async () => {
 /* Sama dengan PHP: tinggi baris 95px hanya minimum, isinya mengalir sehingga baris bisa lebih tinggi. */
 .baris-bal {
     height: 95px;
+}
+
+/* Ukuran tabel bal disamakan dengan hasil ukur halaman PHP di DevTools (363 x 106):
+   lebar sudah termasuk garis tepi (PHP berjalan di quirks mode, tabel memakai border-box). */
+.blok .tabel-bal {
+    box-sizing: border-box;
+    height: 106px;
 }
 
 .sisi {
