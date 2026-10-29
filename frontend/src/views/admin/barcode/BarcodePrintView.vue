@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
@@ -73,10 +73,6 @@ const cetak = async () => {
 };
 
 const tutup = () => window.close();
-
-// Tab ditutup otomatis setelah dialog print selesai atau dibatalkan, supaya tab cetak tidak menumpuk.
-onMounted(() => window.addEventListener('afterprint', tutup));
-onBeforeUnmount(() => window.removeEventListener('afterprint', tutup));
 
 onMounted(async () => {
     if (!jenis) {
@@ -174,7 +170,7 @@ onMounted(async () => {
 
         <!-- Bal: satu label per baris. Internal dua sisi QR, external satu sisi QR dan satu sisi Code128 -->
         <template v-else>
-            <template v-for="label in labels" :key="label.item_code">
+            <div v-for="label in labels" :key="label.item_code" class="blok">
                 <table class="tabel-bal garis-hitam" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr class="baris-bal">
@@ -208,7 +204,7 @@ onMounted(async () => {
                     </tbody>
                 </table>
                 <div class="jeda">&nbsp;</div>
-            </template>
+            </div>
         </template>
     </div>
 </template>
@@ -284,6 +280,22 @@ onMounted(async () => {
     height: 8px;
 }
 
+/* Satu label bal beserta jarak 8px di bawahnya. Label tidak boleh terbelah di batas halaman/stiker:
+   kalau tidak muat, seluruh label pindah ke halaman berikutnya.
+   Dua aturan pertama meniadakan reset Tailwind (line-height 1.5, border-box) di area label bal,
+   supaya hitungan tinggi sama dengan halaman PHP yang tidak memakai reset itu. */
+.blok,
+.blok * {
+    box-sizing: content-box;
+    line-height: normal;
+}
+
+.blok {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+/* Sama dengan PHP: tinggi baris 95px hanya minimum, isinya mengalir sehingga baris bisa lebih tinggi. */
 .baris-bal {
     height: 95px;
 }
@@ -293,16 +305,15 @@ onMounted(async () => {
     width: 130px;
 }
 
-/* Tinggi 95px sama dengan tinggi baris, jadi baris tidak melar dan muat 9 label per halaman. */
+/* Isi mengalir seperti di PHP: teks, QR, nomor. QR dibuat block supaya tidak ada celah di bawah
+   gambar, sama seperti halaman PHP yang berjalan di quirks mode (tanpa doctype). */
 .isi-sisi {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    box-sizing: border-box;
     width: 130px;
-    height: 95px;
-    line-height: 1.2;
+}
+
+.isi-sisi .qr {
+    display: block;
+    margin: 0 auto;
 }
 
 .tengah {
