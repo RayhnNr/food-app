@@ -87,8 +87,24 @@ const cekNomorBerikutnya = async () => {
 };
 
 const simpan = async () => {
-    errors.value = {};
+    if (saving.value) return;
     saving.value = true;
+
+    const konfirmasi = await Swal.fire({
+        icon: 'question',
+        title: `Generate ${totalKode.value} barcode?`,
+        text: 'Pastikan rentang nomor barcode sudah benar.',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, generate',
+        cancelButtonText: 'Batal',
+    });
+
+    if (!konfirmasi.isConfirmed) {
+        saving.value = false;
+        return;
+    }
+
+    errors.value = {};
 
     try {
         const res = await api.post('/barcode/internal', {
@@ -154,10 +170,14 @@ onMounted(getPartai);
             </div>
 
             <div>
-                <label for="tahun" class="mb-1 block text-sm font-medium text-gray-700">Tahun</label>
+                <label for="tahun" class="mb-1 block text-sm font-medium text-gray-700"
+                    >Tahun</label
+                >
                 <input id="tahun" v-model="form.tahun" type="number" :class="inputClass('tahun')" />
                 <p v-if="errors.tahun" class="mt-1 text-sm text-red-600">{{ errors.tahun }}</p>
-                <p v-else class="mt-1 text-sm text-gray-500">Kode tahun pada barcode: {{ kodeTahun }}</p>
+                <p v-else class="mt-1 text-sm text-gray-500">
+                    Kode tahun pada barcode: {{ kodeTahun }}
+                </p>
             </div>
 
             <div class="grid gap-5 md:grid-cols-2">
@@ -175,7 +195,9 @@ onMounted(getPartai);
                     <p v-if="errors.item_code_from" class="mt-1 text-sm text-red-600">
                         {{ errors.item_code_from }}
                     </p>
-                    <p v-else-if="loadingNext" class="mt-1 text-sm text-gray-500">Mengecek nomor urut...</p>
+                    <p v-else-if="loadingNext" class="mt-1 text-sm text-gray-500">
+                        Mengecek nomor urut...
+                    </p>
                     <p v-else-if="nextInfo" class="mt-1 text-sm text-gray-500">{{ nextInfo }}</p>
                     <p v-else class="mt-1 text-sm text-gray-500">
                         Terisi otomatis setelah partai dan tahun dipilih.

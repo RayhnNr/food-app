@@ -69,8 +69,24 @@ const partaiOptions = computed(() =>
 );
 
 const simpan = async () => {
-    errors.value = {};
+    if (saving.value) return;
     saving.value = true;
+
+    const konfirmasi = await Swal.fire({
+        icon: 'question',
+        title: `Generate ${totalKode.value} barcode?`,
+        text: 'Pastikan rentang nomor barcode sudah benar.',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, generate',
+        cancelButtonText: 'Batal',
+    });
+
+    if (!konfirmasi.isConfirmed) {
+        saving.value = false;
+        return;
+    }
+
+    errors.value = {};
 
     try {
         const res = await api.post('/barcode/external', {
@@ -145,8 +161,12 @@ onMounted(getPartai);
                         placeholder="Contoh: BFTP"
                         :class="inputClass('header')"
                     />
-                    <p v-if="errors.header" class="mt-1 text-sm text-red-600">{{ errors.header }}</p>
-                    <p v-else class="mt-1 text-sm text-gray-500">Huruf, angka, dan simbol tanpa spasi.</p>
+                    <p v-if="errors.header" class="mt-1 text-sm text-red-600">
+                        {{ errors.header }}
+                    </p>
+                    <p v-else class="mt-1 text-sm text-gray-500">
+                        Huruf, angka, dan simbol tanpa spasi.
+                    </p>
                 </div>
 
                 <div>
@@ -164,12 +184,16 @@ onMounted(getPartai);
                     <p v-if="errors.item_code_digit" class="mt-1 text-sm text-red-600">
                         {{ errors.item_code_digit }}
                     </p>
-                    <p v-else class="mt-1 text-sm text-gray-500">Jumlah digit nomor urut, 1 sampai 9.</p>
+                    <p v-else class="mt-1 text-sm text-gray-500">
+                        Jumlah digit nomor urut, 1 sampai 9.
+                    </p>
                 </div>
             </div>
 
             <div>
-                <label for="tahun" class="mb-1 block text-sm font-medium text-gray-700">Tahun</label>
+                <label for="tahun" class="mb-1 block text-sm font-medium text-gray-700"
+                    >Tahun</label
+                >
                 <input id="tahun" v-model="form.tahun" type="number" :class="inputClass('tahun')" />
                 <p v-if="errors.tahun" class="mt-1 text-sm text-red-600">{{ errors.tahun }}</p>
             </div>
