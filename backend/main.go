@@ -36,6 +36,7 @@ func main() {
 		&models.GoodsPartaiDecimal{},
 		&models.GoodsPartaiTarra{},
 		&models.BarcodeItem{},
+		&models.GoodsGrade{},
 	)
 
 	r := gin.Default()
@@ -118,6 +119,14 @@ func main() {
 		auth.GET("/goods-partai/:id/decimal", handlers.GetGoodsPartaiDecimal)
 		auth.POST("/goods-partai/:id/decimal", handlers.CreateGoodsPartaiDecimal)
 		auth.DELETE("/goods-partai/:id/decimal/:decimal_id", handlers.DeleteGoodsPartaiDecimal)
+
+
+		// Goods Grade
+		auth.GET("/goods-grade", handlers.GetGoodsGrade)
+		auth.GET("/goods-grade/:id", handlers.GetGoodsGradeBy)
+		auth.POST("/goods-grade", handlers.CreateGoodsGrade)
+		auth.PUT("/goods-grade/:id", handlers.UpdateGoodsGrade)
+		auth.DELETE("/goods-grade/:id", handlers.DeleteGoodsGrade)
 
 		// Barcode
 		auth.GET("/barcode", handlers.GetBarcode)

@@ -26,6 +26,7 @@ import BarcodeView from '@/views/admin/barcode/BarcodeView.vue';
 import FormBarcodeInternal from '@/views/admin/barcode/FormBarcodeInternal.vue';
 import FormBarcodeExternal from '@/views/admin/barcode/FormBarcodeExternal.vue';
 import BarcodePrintView from '@/views/admin/barcode/BarcodePrintView.vue';
+import GoodsGrade from '@/views/admin/goods_grade/GoodsGrade.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -66,6 +67,7 @@ const router = createRouter({
                 { path: 'goods-partai/tambah', component: FormGoodsPartai },
                 { path: 'goods-partai/:id/edit', component: FormGoodsPartai },
                 { path: 'goods-partai/:id/tarra-decimal', component: PartaiTarraDecimal, meta: { requiresAuth: true } },
+                { path: 'goods-grade', component: GoodsGrade },
                 { path: 'barcode', component: BarcodeView },
                 { path: 'barcode/internal', component: FormBarcodeInternal },
                 { path: 'barcode/external', component: FormBarcodeExternal },
