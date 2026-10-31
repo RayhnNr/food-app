@@ -27,6 +27,8 @@ import FormBarcodeInternal from '@/views/admin/barcode/FormBarcodeInternal.vue';
 import FormBarcodeExternal from '@/views/admin/barcode/FormBarcodeExternal.vue';
 import BarcodePrintView from '@/views/admin/barcode/BarcodePrintView.vue';
 import GoodsGrade from '@/views/admin/goods_grade/GoodsGrade.vue';
+import GoodsView from '@/views/admin/goods/GoodsView.vue';
+import GoodsForm from '@/views/admin/goods/GoodsForm.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -63,6 +65,9 @@ const router = createRouter({
                 { path: 'coa', component: CoaView },
                 { path: 'coa-types', component: CoaType },
                 { path: 'coa-journal', component: CoaJournalView },
+                { path: 'goods', component: GoodsView },
+                { path: 'goods/tambah', component: GoodsForm },
+                { path: 'goods/:id/edit', component: GoodsForm },
                 { path: 'goods-partai', component: GoodsPartai },
                 { path: 'goods-partai/tambah', component: FormGoodsPartai },
                 { path: 'goods-partai/:id/edit', component: FormGoodsPartai },
