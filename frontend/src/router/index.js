@@ -61,10 +61,10 @@ const router = createRouter({
             meta: { requiresAuth: true, requiresAdmin: true },
             children: [
                 { path: 'dashboard', component: DashboardView },
-                { path: 'foods', component: AdminFoodsView },
-                { path: 'foods/tambah', component: FoodFormView },
-                { path: 'foods/:id/edit', component: FoodFormView },
-                { path: 'category', component: CategoryView },
+                // { path: 'foods', component: AdminFoodsView },
+                // { path: 'foods/tambah', component: FoodFormView },
+                // { path: 'foods/:id/edit', component: FoodFormView },
+                // { path: 'category', component: CategoryView },
                 { path: 'coa', component: CoaView },
                 { path: 'coa-types', component: CoaType },
                 { path: 'coa-journal', component: CoaJournalView },
@@ -82,8 +82,8 @@ const router = createRouter({
                 { path: 'barcode/internal', component: FormBarcodeInternal },
                 { path: 'barcode/external', component: FormBarcodeExternal },
                 // { path: 'barcode/:id/print', component: BarcodePrintView },
-                { path: 'pesanans', component: PesananFoodsView },
-                { path: 'pesanans/:id/edit', component: PesananEditView },
+                // { path: 'pesanans', component: PesananFoodsView },
+                // { path: 'pesanans/:id/edit', component: PesananEditView },
                 { path: 'fee', component: FeeForm, meta: { 
                     requiresAuth: true, 
                     requiresAdmin: true 
