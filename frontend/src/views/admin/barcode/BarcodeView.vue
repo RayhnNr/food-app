@@ -1,13 +1,18 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import api from '@/api';
 import Swal from 'sweetalert2';
 import BarcodeDetailModal from './BarcodeDetailModal.vue';
+import Pagination from '@/components/Pagination.vue';
 
 const barcodes = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const search = ref('');
+const currentPage = ref(1);
+const limit = ref(10);
+const totalData = ref(0);
+const totalPages = ref(0);
 
 const detailBarcode = ref(null);
 const showDetail = ref(false);
@@ -29,8 +34,17 @@ const getBarcode = async () => {
     error.value = null;
 
     try {
-        const res = await api.get('/barcode');
+        const res = await api.get('/barcode', {
+            params: {
+                page: currentPage.value,
+                limit: limit.value,
+                q: search.value.trim(),
+            },
+        });
         barcodes.value = res.data.data;
+        currentPage.value = res.data.currentPage;
+        totalData.value = res.data.totalData;
+        totalPages.value = res.data.totalPages;
     } catch (e) {
         error.value = 'Gagal mengambil data barcode. Pastikan server API sudah jalan.';
         console.error(e);
@@ -39,20 +53,15 @@ const getBarcode = async () => {
     }
 };
 
-// Pencarian dilakukan di browser, karena endpoint /barcode belum punya filter.
-const filteredBarcodes = computed(() => {
-    const q = search.value.trim().toLowerCase();
-    if (!q) return barcodes.value;
+function changePage(page) {
+    if (page < 1 || page > totalPages.value) return;
 
-    return barcodes.value.filter(
-        (b) =>
-            b.code_min.toLowerCase().includes(q) ||
-            b.code_max.toLowerCase().includes(q) ||
-            (b.goods_partai_name || '').toLowerCase().includes(q),
-    );
-});
+    currentPage.value = page;
+    getBarcode();
+}
 
-const rentangKode = (b) => (b.code_min === b.code_max ? b.code_min : `${b.code_min} s/d ${b.code_max}`);
+const rentangKode = (b) =>
+    b.code_min === b.code_max ? b.code_min : `${b.code_min} s/d ${b.code_max}`;
 
 const formatTanggal = (value) =>
     new Date(value).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
@@ -83,7 +92,16 @@ const hapusBarcode = async (barcode) => {
     }
 };
 
+let searchTimeout;
+
+watch(search, () => {
+    currentPage.value = 1;
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(getBarcode, 300);
+});
+
 onMounted(getBarcode);
+onUnmounted(() => clearTimeout(searchTimeout));
 </script>
 
 <template>
@@ -138,18 +156,18 @@ onMounted(getBarcode);
                     <tr v-if="loading">
                         <td colspan="8" class="text-center py-10 text-gray-500">Memuat data...</td>
                     </tr>
-                    <tr v-else-if="filteredBarcodes.length === 0">
+                    <tr v-else-if="barcodes.length === 0">
                         <td colspan="8" class="text-center py-10 text-gray-500">
                             Belum ada data barcode.
                         </td>
                     </tr>
                     <template v-else>
                         <tr
-                            v-for="(barcode, index) in filteredBarcodes"
+                            v-for="(barcode, index) in barcodes"
                             :key="barcode.item_id"
                             class="border-b border-gray-200 hover:bg-gray-100"
                         >
-                            <td class="py-3 px-6 text-left">{{ index + 1 }}</td>
+                            <td class="py-3 px-6 text-left">{{ (currentPage - 1) * limit + index + 1 }}</td>
                             <td class="py-3 px-6 text-left">
                                 <a
                                     href="#"
@@ -160,7 +178,9 @@ onMounted(getBarcode);
                                     {{ rentangKode(barcode) }}
                                 </a>
                             </td>
-                            <td class="py-3 px-6 text-left">{{ barcode.goods_partai_name || '-' }}</td>
+                            <td class="py-3 px-6 text-left">
+                                {{ barcode.goods_partai_name || '-' }}
+                            </td>
                             <td class="py-3 px-6 text-left">
                                 <span
                                     class="inline-flex rounded px-2 py-1 text-xs font-semibold"
@@ -196,6 +216,14 @@ onMounted(getBarcode);
                     </template>
                 </tbody>
             </table>
+            <Pagination
+                :current-page="currentPage"
+                :total-pages="totalPages"
+                :total-items="totalData"
+                :page-size="limit"
+                :loading="loading"
+                @change="changePage"
+            />
         </div>
 
         <BarcodeDetailModal :show="showDetail" :batch="detailBarcode" @close="tutupDetail" />
