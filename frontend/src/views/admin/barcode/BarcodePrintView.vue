@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, shallowRef, computed, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
@@ -20,9 +20,10 @@ const jenis = Object.hasOwn(JENIS, jenisQuery) ? JENIS[jenisQuery] : null;
 const itemID = route.params.id;
 const itemCode = route.query.item_code ? String(route.query.item_code) : '';
 
-const labels = ref([]);
+const labels = shallowRef([]);
 const loading = ref(true);
 const error = ref('');
+const progress = ref(0);
 
 const svgKeUri = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
@@ -37,25 +38,38 @@ const buatBarcode = (kode) => {
     return svgKeUri(new XMLSerializer().serializeToString(svg));
 };
 
-const siapkan = (rows) =>
-    Promise.all(
-        rows.map(async (r) => {
-            const external = r.item_type === 'external';
-            // Label external tidak menampilkan nama partai.
-            const [utama = '', kedua = ''] = external ? [] : (r.goods_partai_name || '').split(' ');
+const siapkan = async (rows) => {
+    const hasil = [];
+    const ukuranBatch = 100;
 
-            return {
-                ...r,
-                partaiUtama: utama,
-                partaiKedua: kedua,
-                // Tahun hanya tampil di label external, sama seperti PHP.
-                tahun: external ? r.year_code : '',
-                nomor: Number.parseInt(r.serial, 10) || 0,
-                qr: await buatQR(r.item_code),
-                barcode: external && jenis.layout === 'bal' ? buatBarcode(r.item_code) : '',
-            };
-        }),
-    );
+    for (let awal = 0; awal < rows.length; awal += ukuranBatch) {
+        const batch = rows.slice(awal, awal + ukuranBatch);
+        const hasilBatch = await Promise.all(
+            batch.map(async (r) => {
+                const external = r.item_type === 'external';
+                // Label external tidak menampilkan nama partai.
+                const [utama = '', kedua = ''] = external ? [] : (r.goods_partai_name || '').split(' ');
+
+                return {
+                    ...r,
+                    partaiUtama: utama,
+                    partaiKedua: kedua,
+                    // Tahun hanya tampil di label external, sama seperti PHP.
+                    tahun: external ? r.year_code : '',
+                    nomor: Number.parseInt(r.serial, 10) || 0,
+                    qr: await buatQR(r.item_code),
+                    barcode: external && jenis.layout === 'bal' ? buatBarcode(r.item_code) : '',
+                };
+            }),
+        );
+
+        hasil.push(...hasilBatch);
+        progress.value = Math.round((hasil.length / rows.length) * 100);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    return hasil;
+};
 
 // Pita dicetak dua label per baris.
 const pasangan = computed(() => {
@@ -68,7 +82,10 @@ const pasangan = computed(() => {
 
 const cetak = async () => {
     await nextTick();
-    await Promise.all([...document.images].map((img) => img.decode().catch(() => {})));
+    const images = [...document.images];
+    for (let awal = 0; awal < images.length; awal += 100) {
+        await Promise.all(images.slice(awal, awal + 100).map((img) => img.decode().catch(() => {})));
+    }
     window.print();
 };
 
@@ -124,7 +141,9 @@ onMounted(async () => {
             </div>
         </header>
 
-        <p v-if="loading" class="no-print text-sm text-gray-500">Menyiapkan label...</p>
+        <p v-if="loading" class="no-print text-sm text-gray-500">
+            Menyiapkan label... {{ progress }}%
+        </p>
         <p v-else-if="error" class="no-print text-sm text-red-600">{{ error }}</p>
 
         <!-- Pita: dua label per baris -->
