@@ -41,6 +41,13 @@ const judul = computed(() => (props.batch ? `Detail Barcode ${rentang.value}` : 
 const totalHalaman = computed(() => Math.max(1, Math.ceil(items.value.length / perPage)));
 const offset = computed(() => (page.value - 1) * perPage);
 const itemsHalaman = computed(() => items.value.slice(offset.value, offset.value + perPage));
+const nomorHalaman = computed(() => {
+    const total = totalHalaman.value;
+    if (total <= 5) return Array.from({ length: total }, (_, index) => index + 1);
+    if (page.value <= 3) return [1, 2, 3, '...', total];
+    if (page.value >= total - 2) return [1, '...', total - 2, total - 1, total];
+    return [1, '...', page.value - 1, page.value, page.value + 1, '...', total];
+});
 
 const formatTanggal = (value) =>
     new Date(value).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
@@ -183,26 +190,50 @@ watch(
             </table>
         </div>
 
-        <div v-if="totalHalaman > 1" class="mt-4 flex items-center justify-between text-sm text-gray-600">
+        <div
+            v-if="totalHalaman > 1"
+            class="mt-4 flex flex-col items-center gap-3 text-sm text-gray-600 sm:flex-row sm:justify-between"
+        >
             <span>Halaman {{ page }} dari {{ totalHalaman }}</span>
-            <div class="flex gap-2">
+            <nav aria-label="Navigasi halaman barcode" class="flex flex-wrap items-center justify-center gap-1">
                 <button
                     type="button"
                     :disabled="page === 1"
                     @click="page--"
-                    :class="[tombolCetak, 'px-3 py-1']"
+                    aria-label="Halaman sebelumnya"
+                    :class="[tombolCetak, 'px-2 py-1 sm:px-3']"
                 >
                     Sebelumnya
                 </button>
+                <template v-for="(nomor, index) in nomorHalaman" :key="`${nomor}-${index}`">
+                    <span v-if="nomor === '...'" aria-hidden="true" class="px-1">...</span>
+                    <button
+                        v-else
+                        type="button"
+                        :aria-label="`Halaman ${nomor}`"
+                        :aria-current="page === nomor ? 'page' : undefined"
+                        :class="[
+                            tombolCetak,
+                            'min-w-9 px-2 py-1',
+                            page === nomor
+                                ? '!border-blue-600 !bg-blue-600 !text-white hover:!bg-blue-700'
+                                : '',
+                        ]"
+                        @click="page = nomor"
+                    >
+                        {{ nomor }}
+                    </button>
+                </template>
                 <button
                     type="button"
                     :disabled="page === totalHalaman"
                     @click="page++"
-                    :class="[tombolCetak, 'px-3 py-1']"
+                    aria-label="Halaman berikutnya"
+                    :class="[tombolCetak, 'px-2 py-1 sm:px-3']"
                 >
                     Berikutnya
                 </button>
-            </div>
+            </nav>
         </div>
     </Modal>
 </template>
