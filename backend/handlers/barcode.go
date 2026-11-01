@@ -7,6 +7,7 @@ import (
 	"food-api/middlewares"
 	"food-api/models"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"regexp"
@@ -349,39 +350,88 @@ func barcodeItemID(c *gin.Context) (uint, bool) {
 
 // GET /barcode
 func GetBarcode(c *gin.Context) {
-	userID, ok := middlewares.GetUserIDFromCOntext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "User tidak dikenali",
-		})
-		return
-	}
+    userID, ok := middlewares.GetUserIDFromCOntext(c)
+    if !ok {
+        c.JSON(http.StatusUnauthorized, gin.H{
+            "message": "User tidak dikenali",
+        })
+        return
+    }
 
-	rows := []BarcodeBatchRow{}
-	err := database.DB.Table("barcode_item AS i").
-		Select(`i.item_id AS item_id,
-			MAX(COALESCE(p.goods_partai_name, '')) AS goods_partai_name,
-			MAX(i.item_type) AS item_type,
-			MAX(i.item_year) AS item_year,
-			MAX(i.item_date_create) AS item_date_create,
-			MIN(i.item_code) AS code_min,
-			MAX(i.item_code) AS code_max,
-			COUNT(*) AS total`).
-		Joins("LEFT JOIN goods_partai AS p ON p.goods_partai_id = i.goods_partai_id").
-		Where("i.user_id = ?", userID).
-		Group("i.item_id").
-		Order("i.item_id DESC").
-		Scan(&rows).Error
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Gagal ambil data barcode",
-		})
-		return
-	}
+    // Parameter pagination
+    page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+    if err != nil || page < 1 {
+        page = 1
+    }
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": rows,
-	})
+    limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+    if err != nil || limit < 1 {
+        limit = 10
+    }
+
+    if limit > 100 {
+        limit = 100
+    }
+
+    offset := (page - 1) * limit
+
+    query := strings.TrimSpace(c.Query("q"))
+    batchQuery := database.DB.Table("barcode_item AS i").
+        Select(`i.item_id AS item_id,
+            MAX(COALESCE(p.goods_partai_name, '')) AS goods_partai_name,
+            MAX(i.item_type) AS item_type,
+            MAX(i.item_year) AS item_year,
+            MAX(i.item_date_create) AS item_date_create,
+            MIN(i.item_code) AS code_min,
+            MAX(i.item_code) AS code_max,
+            COUNT(*) AS total`).
+        Joins("LEFT JOIN goods_partai AS p ON p.goods_partai_id = i.goods_partai_id").
+        Where("i.user_id = ?", userID).
+        Group("i.item_id")
+
+    batches := database.DB.Table("(?) AS batches", batchQuery)
+    if query != "" {
+        like := "%" + strings.ToLower(query) + "%"
+        batches = batches.Where(
+            "(LOWER(batches.code_min) LIKE ? OR LOWER(batches.code_max) LIKE ? OR LOWER(batches.goods_partai_name) LIKE ?)",
+            like,
+            like,
+            like,
+        )
+    }
+
+    var total int64
+    if err := batches.Count(&total).Error; err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "message": "Gagal menghitung data barcode",
+        })
+        return
+    }
+
+    rows := []BarcodeBatchRow{}
+    err = batches.
+        Select("batches.*").
+        Order("batches.item_id DESC").
+        Limit(limit).
+        Offset(offset).
+        Scan(&rows).Error
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "message": "Gagal ambil data barcode",
+        })
+        return
+    }
+
+    totalPages := int(math.Ceil(float64(total) / float64(limit)))
+
+    c.JSON(http.StatusOK, gin.H{
+        "data":        rows,
+        "currentPage": page,
+        "limit":       limit,
+        "totalData":   total,
+        "totalPages":  totalPages,
+    })
 }
 
 // GET /barcode/:item_id
