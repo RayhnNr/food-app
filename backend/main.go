@@ -40,6 +40,7 @@ func main() {
 		&models.GoodsCategory{},
 		&models.Goods{},
 		&models.GoodsCoa{},
+		&models.Fee{},
 	)
 
 	r := gin.Default()
@@ -149,6 +150,10 @@ func main() {
 		auth.GET("/barcode/:item_id", handlers.GetBarcodeDetail)
 		auth.GET("/barcode/:item_id/print", handlers.GetBarcodePrint)
 		auth.DELETE("/barcode/:item_id", handlers.DeleteBarcode)
+
+		// Fee
+		auth.GET("/fee", handlers.GetFee)
+		auth.PUT("/fee", handlers.UpdateFee)
 
 		// Admin
 		admin := auth.Group("/admin")

@@ -39,6 +39,7 @@ const menus = [
     { to: '/admin/goods-partai', label: 'Data Partai', icon: 'fa-receipt' },
     { to: '/admin/goods-grade', label: 'Data Grade', icon: 'fa-receipt' },
     { to: '/admin/barcode', label: 'Barcode', icon: 'fa-receipt' },
+    { to: '/admin/fee', label: 'Biaya Tetap', icon: 'fa-receipt' },
 ];
 </script>
 
