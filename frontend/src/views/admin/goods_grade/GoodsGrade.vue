@@ -1,9 +1,10 @@
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import api from '@/api';
 import Swal from 'sweetalert2';
 import Modal from '@/components/Modal.vue';
 import Select2Field from '@/components/Select2Field.vue';
+import Pagination from '@/components/Pagination.vue';
 
 const Toast = Swal.mixin({
     toast: true,
@@ -30,6 +31,11 @@ const saving = ref(false);
 const priceFocused = ref(false);
 const errors = ref({});
 const formError = ref('');
+const currentPage = ref(1);
+const limit = ref(10);
+const totalData = ref(0);
+const totalPages = ref(0);
+
 const actionButtonClass =
     'inline-flex h-9 w-9 items-center justify-center rounded-md border text-gray-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
 
@@ -126,8 +132,17 @@ const load = async () => {
         if (search.value.trim()) params.q = search.value.trim();
         if (activeFilter.value !== 'all') params.active = activeFilter.value;
 
-        const res = await api.get('/goods-grade', { params });
+        const res = await api.get('/goods-grade', {
+            params: {
+                ...params,
+                page: currentPage.value,
+                limit: limit.value,
+            },
+        });
         rows.value = res.data.data;
+        currentPage.value = res.data.currentPage;
+        totalData.value = res.data.totalData;
+        totalPages.value = res.data.totalPages;
     } catch (e) {
         loadError.value = e.response?.data?.message || 'Gagal mengambil data grade.';
         console.error(e);
@@ -136,12 +151,24 @@ const load = async () => {
     }
 };
 
+function changePage(page) {
+    if (page < 1 || page > totalPages.value) return;
+
+    currentPage.value = page;
+    load();
+}
+
 let searchTimer;
 watch(search, () => {
     clearTimeout(searchTimer);
+    currentPage.value = 1;
     searchTimer = setTimeout(load, 300);
 });
-watch(activeFilter, load);
+watch(activeFilter, () => {
+    clearTimeout(searchTimer);
+    currentPage.value = 1;
+    load();
+});
 
 const resetErrors = () => {
     errors.value = {};
@@ -232,6 +259,9 @@ const remove = async (row) => {
 
     try {
         await api.delete(`/goods-grade/${row.goods_grade_id}`);
+        if (currentPage.value > 1 && rows.value.length === 1) {
+            currentPage.value -= 1;
+        }
         await load();
         Toast.fire({ icon: 'success', title: 'Berhasil menghapus grade' });
     } catch (e) {
@@ -245,6 +275,9 @@ const remove = async (row) => {
 };
 
 onMounted(load);
+onBeforeUnmount(() => {
+    clearTimeout(searchTimer);
+});
 </script>
 
 <template>
@@ -313,7 +346,7 @@ onMounted(load);
                                 class="border-b border-gray-200 transition hover:bg-gray-50"
                             >
                                 <td class="px-4 py-3 text-center">
-                                    {{ index + 1 }}
+                                    {{ (currentPage - 1) * limit + index + 1 }}
                                 </td>
                                 <td class="px-4 py-3 font-medium text-gray-800">
                                     {{ row.goods_grade_name }}
@@ -368,6 +401,14 @@ onMounted(load);
                         </template>
                     </tbody>
                 </table>
+                <Pagination
+                    :current-page="currentPage"
+                    :total-pages="totalPages"
+                    :total-items="totalData"
+                    :page-size="limit"
+                    :loading="loading"
+                    @change="changePage"
+                />
             </div>
         </div>
 
