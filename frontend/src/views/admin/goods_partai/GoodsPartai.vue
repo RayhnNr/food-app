@@ -9,7 +9,7 @@ const loading = ref(true);
 const error = ref(null);
 const search = ref('');
 const currentPage = ref(1);
-const limit = ref(2);
+const limit = ref(10);
 const totalData = ref(0);
 const totalPages = ref(0);
 
