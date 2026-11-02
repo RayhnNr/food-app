@@ -161,6 +161,7 @@ func SaveCoaJournal(c *gin.Context) {
 		return
 	}
 
+	// Proses Transaksi untuk menyimpan data Coa Journal
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		for _, it := range in.Items {
 			if it.CoaID == nil {
@@ -207,6 +208,8 @@ func SaveCoaJournal(c *gin.Context) {
 		return
 	}
  
+
+	// response Ketika berhasil menyimpan, Coa Journal
 	c.JSON(http.StatusOK, gin.H{
 		"data": rows,
 	})
