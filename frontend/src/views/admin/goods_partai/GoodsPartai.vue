@@ -2,11 +2,18 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import api from '@/api';
 import Swal from 'sweetalert2';
+import Pagination from '@/components/Pagination.vue';
 
 const goodspartais = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const search = ref('');
+const currentPage = ref(1);
+const limit = ref(2);
+const totalData = ref(0);
+const totalPages = ref(0);
+
+
 const actionButtonClass =
     'inline-flex h-9 w-9 items-center justify-center rounded-md border text-gray-600 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500';
 
@@ -20,9 +27,14 @@ const getGoodsPartai = async () => {
                 q: search.value,
                 _sort: 'goods_partai_id',
                 _order: 'DESC',
+                page: currentPage.value,
+                limit: limit.value,
             },
         });
         goodspartais.value = res.data.data;
+        currentPage.value = res.data.currentPage;
+        totalData.value = res.data.totalData;
+        totalPages.value = res.data.totalPages;
     } catch (e) {
         error.value = 'Gagal mengambil data. Pastikan npm run api sudah jalan.';
         console.error(e);
@@ -30,6 +42,13 @@ const getGoodsPartai = async () => {
         loading.value = false;
     }
 };
+
+function changePage(page) {
+    if (page < 1 || page > totalPages.value) return;
+
+    currentPage.value = page;
+    getGoodsPartai();
+}
 
 const hapusPartai = async (goods) => {
     const result = await Swal.fire({
@@ -45,6 +64,9 @@ const hapusPartai = async (goods) => {
 
     try {
         await api.delete(`/goods-partai/${goods.goods_partai_id}`);
+        if (currentPage.value > 1 && goodspartais.value.length === 1) {
+            currentPage.value -= 1;
+        }
         await getGoodsPartai();
         Swal.fire({ icon: 'success', title: 'Berhasil menghapus Partai' });
     } catch (e) {
@@ -62,6 +84,7 @@ onMounted(getGoodsPartai);
 let timer;
 watch(search, () => {
     clearTimeout(timer);
+    currentPage.value = 1;
     timer = setTimeout(getGoodsPartai, 400);
 });
 
@@ -119,7 +142,7 @@ onBeforeUnmount(() => {
                         class="border-b border-gray-200 hover:bg-gray-100"
                     >
                         <td class="py-3 px-6 text-left">
-                            {{ index + 1 }}
+                            {{ (currentPage - 1) * limit + index + 1 }}
                         </td>
                         <!-- <td>{{ String(goods.goods_partai_code).padStart(3, '0') }}</td> -->
                         <td class="py-3 px-6 text-left">
@@ -176,6 +199,14 @@ onBeforeUnmount(() => {
                     </tr>
                 </tbody>
             </table>
+            <Pagination
+                :current-page="currentPage"
+                :total-pages="totalPages"
+                :total-items="totalData"
+                :page-size="limit"
+                :loading="loading"
+                @change="changePage"
+            />
         </div>
     </section>
 </template>
