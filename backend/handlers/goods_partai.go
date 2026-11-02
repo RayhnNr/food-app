@@ -296,12 +296,25 @@ func GetGoodsPartai(c *gin.Context) {
 	userID, ok := middlewares.GetUserIDFromCOntext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"message" : "User tidak dikenali",
+			"message": "User tidak dikenali",
 		})
 		return
 	}
 
-	q := database.DB.Where("user_id = ?", userID)
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	q := database.DB.Model(&models.GoodsPartai{}).Where("user_id = ?", userID)
 
 	if s := strings.TrimSpace(c.Query("q")); s != "" {
 		like := "%" + strings.ToLower(s) + "%"
@@ -315,10 +328,24 @@ func GetGoodsPartai(c *gin.Context) {
 		q = q.Where("goods_partai_active <> 1")
 	}
 
-	list := []models.GoodsPartai{}
-	if err := q.Order("goods_partai_year DESC, goods_partai_id DESC").Find(&list).Error; err != nil {
+	q = q.Session(&gorm.Session{})
+
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message" : "Gagal ambil data partai",
+			"message": "Gagal menghitung data partai",
+		})
+		return
+	}
+
+	list := []models.GoodsPartai{}
+	err = q.Order("goods_partai_year DESC, goods_partai_id DESC").
+		Limit(limit).
+		Offset((page - 1) * limit).
+		Find(&list).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Gagal ambil data partai",
 		})
 		return
 	}
@@ -329,7 +356,11 @@ func GetGoodsPartai(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data" : rows,
+		"data":        rows,
+		"currentPage": page,
+		"limit":       limit,
+		"totalData":   total,
+		"totalPages":  (int(total) + limit - 1) / limit,
 	})
 }
 
