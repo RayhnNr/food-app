@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type GoodsGradeInput struct {
@@ -86,14 +87,31 @@ func validasiGoodsGrade(in *GoodsGradeInput, userID, id uint) map[string]string 
 func GetGoodsGrade(c *gin.Context) {
 	userID, ok := middlewares.GetUserIDFromCOntext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "User tidak dikenali"})
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "User tidak dikenali",
+		})
 		return
 	}
 
-	q := database.DB.Where("user_id = ?", userID)
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		page = 1
+	}
 
-	if s := strings.TrimSpace(c.Query("q")); s != "" {
-		q = q.Where("LOWER(goods_grade_name) LIKE ?", "%"+strings.ToLower(s)+"%")
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+
+	if limit > 100 {
+		limit = 100
+	}
+
+	q := database.DB.Model(&models.GoodsGrade{}).Where("user_id = ?", userID)
+
+	if s := strings.TrimSpace(c.Query("q")); s != "" {	
+		like := "%" + strings.ToLower(s) + "%"
+		q = q.Where("LOWER(goods_grade_name) LIKE ?", like)
 	}
 
 	switch c.Query("active") {
@@ -103,8 +121,22 @@ func GetGoodsGrade(c *gin.Context) {
 		q = q.Where("goods_grade_active <> 1")
 	}
 
+	q = q.Session(&gorm.Session{})
+
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Gagal menghitung data partai",
+		})
+		return
+	}
+
 	list := []models.GoodsGrade{}
-	if err := q.Order("goods_grade_price DESC, goods_grade_id ASC").Find(&list).Error; err != nil {
+	err = q.Order("goods_grade_price DESC, goods_grade_id ASC").
+		Limit(limit).
+		Offset((page - 1) * limit).
+		Find(&list).Error
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Gagal ambil data grade"})
 		return
 	}
@@ -114,7 +146,13 @@ func GetGoodsGrade(c *gin.Context) {
 		rows = append(rows, toGoodsGradeRow(g))
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": rows})
+	c.JSON(http.StatusOK, gin.H{
+		"data": rows,
+		"currentPage": page,
+		"limit": limit,
+		"totalData": total,
+		"totalPages":  (int(total) + limit - 1) / limit,
+	})
 }
 
 // GET /goods-grade/:id
