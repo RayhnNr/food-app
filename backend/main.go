@@ -41,6 +41,10 @@ func main() {
 		&models.Goods{},
 		&models.GoodsCoa{},
 		&models.Fee{},
+		&models.Province{},
+		&models.City{},
+		&models.Subdistrict{},
+		&models.Bandul{},
 	)
 
 	r := gin.Default()
@@ -154,6 +158,17 @@ func main() {
 		// Fee
 		auth.GET("/fee", handlers.GetFee)
 		auth.PUT("/fee", handlers.UpdateFee)
+
+
+		auth.GET("/provinces", handlers.GetProvinces)
+		auth.GET("/provinces/:id/cities", handlers.GetCities)
+		auth.GET("/cities/:id/subdistricts", handlers.GetSubdistricts)
+
+		auth.GET("/bandul", handlers.GetBandul)
+		auth.GET("/bandul/:id", handlers.GetBandulBy)
+		auth.POST("/bandul", handlers.CreateBandul)
+		auth.PUT("/bandul/:id", handlers.UpdateBandul)
+		auth.DELETE("/bandul/:id", handlers.DeleteBandul)
 
 		// Admin
 		admin := auth.Group("/admin")
