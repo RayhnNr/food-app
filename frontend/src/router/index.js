@@ -30,6 +30,7 @@ import GoodsGrade from '@/views/admin/goods_grade/GoodsGrade.vue';
 import GoodsView from '@/views/admin/goods/GoodsView.vue';
 import GoodsForm from '@/views/admin/goods/GoodsForm.vue';
 import FeeForm from '@/views/admin/fee/FeeForm.vue';
+import BandulView from '@/views/admin/bandul/BandulView.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -41,9 +42,14 @@ const router = createRouter({
 
         // Halaman login dapat dibuka meski sesi sebelumnya masih aktif
         { path: '/login', name: 'Login', component: LoginView },
-        { path: '/register', name: 'Register', component: RegisterView, meta: { 
-            guestOnly: true 
-        } },
+        {
+            path: '/register',
+            name: 'Register',
+            component: RegisterView,
+            meta: {
+                guestOnly: true,
+            },
+        },
 
         // Wajib login
         {
@@ -74,9 +80,13 @@ const router = createRouter({
                 { path: 'goods-partai', component: GoodsPartai },
                 { path: 'goods-partai/tambah', component: FormGoodsPartai },
                 { path: 'goods-partai/:id/edit', component: FormGoodsPartai },
-                { path: 'goods-partai/:id/tarra-decimal', component: PartaiTarraDecimal, meta: { 
-                    requiresAuth: true 
-                } },
+                {
+                    path: 'goods-partai/:id/tarra-decimal',
+                    component: PartaiTarraDecimal,
+                    meta: {
+                        requiresAuth: true,
+                    },
+                },
                 { path: 'goods-grade', component: GoodsGrade },
                 { path: 'barcode', component: BarcodeView },
                 { path: 'barcode/internal', component: FormBarcodeInternal },
@@ -84,10 +94,15 @@ const router = createRouter({
                 // { path: 'barcode/:id/print', component: BarcodePrintView },
                 // { path: 'pesanans', component: PesananFoodsView },
                 // { path: 'pesanans/:id/edit', component: PesananEditView },
-                { path: 'fee', component: FeeForm, meta: { 
-                    requiresAuth: true, 
-                    requiresAdmin: true 
-                } },
+                {
+                    path: 'fee',
+                    component: FeeForm,
+                    meta: {
+                        requiresAuth: true,
+                        requiresAdmin: true,
+                    },
+                },
+                { path: 'bandul', component: BandulView },
             ],
         },
         {
