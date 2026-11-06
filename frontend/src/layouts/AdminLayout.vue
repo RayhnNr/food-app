@@ -40,6 +40,7 @@ const menus = [
     { to: '/admin/goods-grade', label: 'Data Grade', icon: 'fa-receipt' },
     { to: '/admin/barcode', label: 'Barcode', icon: 'fa-receipt' },
     { to: '/admin/fee', label: 'Data Biaya', icon: 'fa-receipt' },
+    { to: '/admin/bandul', label: 'Data Bandul', icon: 'fa-people-arrows-left-right' },
 ];
 </script>
 
