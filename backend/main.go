@@ -19,14 +19,14 @@ func main() {
 	}
 
 	database.Connect()
-	database.DB.AutoMigrate(
+	if err := database.DB.AutoMigrate(
 		&models.Category{},
 		&models.Product{},
 		&models.Keranjang{},
 		&models.Pesanan{},
 		&models.PesananItem{},
-		&models.User{}, 
-		&models.CoaType{}, 
+		&models.User{},
+		&models.CoaType{},
 		&models.Coa{},
 		&models.CoaJournalType{},
 		&models.CoaJournal{},
@@ -45,10 +45,12 @@ func main() {
 		&models.City{},
 		&models.Subdistrict{},
 		&models.Bandul{},
-	)
+		&models.PasswordResetOTP{},
+	); err != nil {
+		log.Fatal("gagal memperbarui skema database: ", err)
+	}
 
 	r := gin.Default()
-	
 
 	r.MaxMultipartMemory = 5 << 20
 	r.Static("/uploads", "./uploads")
@@ -128,14 +130,12 @@ func main() {
 		auth.POST("/goods-partai/:id/decimal", handlers.CreateGoodsPartaiDecimal)
 		auth.DELETE("/goods-partai/:id/decimal/:decimal_id", handlers.DeleteGoodsPartaiDecimal)
 
-
 		// Goods Grade
 		auth.GET("/goods-grade", handlers.GetGoodsGrade)
 		auth.GET("/goods-grade/:id", handlers.GetGoodsGradeBy)
 		auth.POST("/goods-grade", handlers.CreateGoodsGrade)
 		auth.PUT("/goods-grade/:id", handlers.UpdateGoodsGrade)
 		auth.DELETE("/goods-grade/:id", handlers.DeleteGoodsGrade)
-
 
 		// Goods
 		auth.GET("/goods", handlers.GetGoods)
@@ -159,7 +159,6 @@ func main() {
 		auth.GET("/fee", handlers.GetFee)
 		auth.PUT("/fee", handlers.UpdateFee)
 
-
 		auth.GET("/provinces", handlers.GetProvinces)
 		auth.GET("/provinces/:id/cities", handlers.GetCities)
 		auth.GET("/cities/:id/subdistricts", handlers.GetSubdistricts)
@@ -177,9 +176,13 @@ func main() {
 			admin.GET("/pesanans/:id", handlers.GetPesanan)
 			admin.PUT("/pesanans/:id", handlers.UpdatePesanan)
 			admin.DELETE("/pesanans/:id", handlers.HapusPesanan)
-			
+
 		}
 	}
+
+	// Reset Password
+	r.POST("/password-reset", handlers.SendPasswordResetEmail)
+	r.POST("/password-reset/confirm", handlers.ResetPassword)
 
 	r.Run(":8080")
 }

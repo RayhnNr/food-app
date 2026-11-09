@@ -150,6 +150,12 @@ async function handleLogin() {
                         </button>
                     </div>
                 </div>
+                <RouterLink
+                    to="/forgot-password"
+                    class="-mt-3 self-end rounded text-sm font-semibold text-[#12372a] underline underline-offset-4 hover:text-[#0b2219] focus-visible:outline-3 focus-visible:outline-[#f2b705]"
+                >
+                    Lupa password?
+                </RouterLink>
                 <div ref="captchaEl"></div>
 
                 <!-- Tombol -->

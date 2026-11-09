@@ -15,6 +15,7 @@ import PesananFoodsView from '@/views/admin/pesanans/PesananFoodsView.vue';
 import PesananEditView from '@/views/admin/pesanans/PesananEdit.View.vue';
 import LoginView from '@/views/auth/Login.vue';
 import RegisterView from '@/views/auth/Register.vue';
+import ForgotPasswordView from '@/views/auth/ForgotPassword.vue';
 import CategoryView from '@/views/admin/category/CategoryView.vue';
 import CoaView from '@/views/admin/coa/CoaView.vue';
 import CoaJournalView from '@/views/admin/coa_journal/CoaJournalView.vue';
@@ -42,6 +43,7 @@ const router = createRouter({
 
         // Halaman login dapat dibuka meski sesi sebelumnya masih aktif
         { path: '/login', name: 'Login', component: LoginView },
+        { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordView },
         {
             path: '/register',
             name: 'Register',

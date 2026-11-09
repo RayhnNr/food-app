@@ -32,5 +32,5 @@ func Connect() {
 	}
 
 	DB = db
-	log.Println("Database Terkoneksi")
+	log.Println("Database Terkoneksi ✅")
 }
